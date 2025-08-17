@@ -38,4 +38,4 @@ def SS_results(s, T) -> list[list[int]]:
         return s
     return SS_results(s[1:], T) or SS_results(s[1:], T - s[0])
 
-print(SS_results([8, 6, 7, 5, 3, 10, 9], 15))
+print(SS_results([3, 5, 10, 2], 15))

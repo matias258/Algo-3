@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-using namespace std ;
+using namespace std;
 /*
 Suma de Subconjuntos
 
@@ -46,15 +46,17 @@ No hay ciclos porque siempre vamos hacia índices y sumas menores.
 vector<vector<int>> memo; // −1: no calculado , 0: false , 1: true
 
 bool subset_sum_topdown (const vector <int >& S, int i , int t) {
-if(t == 0) return true ;
-if(i == 0) return false ;
-if(memo[i][t] != 1) return memo[i][t] ;
+	if(t == 0) return true ;
+	if(i == 0) return false ;
+	if(memo[i][t] != 1) return memo[i][t];
 
-bool res = subset_sum_topdown(S, i-1, t);
-if(t >= S[i-1])
-res = res || subset_sum_topdown (S, i - 1 , t - S[i - 1] ) ;
-return memo[ i ] [ t ] = res ;
+	bool res = subset_sum_topdown(S, i-1, t);
+
+	if(t >= S[i-1])
+	res = res || subset_sum_topdown (S, i - 1 , t - S[i - 1] ) ;
+	return memo[i][t] = res;
 }
+
 /*
 int main() {
 vector<int> S = {3 , 34, 4, 12, 5, 2} ;
