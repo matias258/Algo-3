@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/Matias/Desktop/Algo-3/Practica/Practica 1_ Tecnicas Algoritmicas",
-      "program": "c:/Users/Matias/Desktop/Algo-3/Practica/Practica 1_ Tecnicas Algoritmicas/build/Debug/outDebug",
+      "cwd": "c:/Users/Matias/Desktop/Algo-3/Practica/Practica 1 Divide & Conquer",
+      "program": "c:/Users/Matias/Desktop/Algo-3/Practica/Practica 1 Divide & Conquer/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

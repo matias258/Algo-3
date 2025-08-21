@@ -1,5 +1,11 @@
 #include <vector>
 #include <iostream>
+#include <queue>
+#include <list>
+#include <unordered_set>
+#include <map>
+#include <unordered_map>
+#include <cstdio>
 using namespace std;
 /* 
 Merge Sort para Python
@@ -29,6 +35,7 @@ def merge ( izq , der ):
     return mergeados
 
 */
+// Esta haciendo mal el merge
 vector<int> merge (vector<int> izq, vector<int> der){
     vector<int> mergeados;
     int i, j = 0;
@@ -58,8 +65,26 @@ vector<int> merge_sort(vector<int> arr){
     if (arr.size() <= 1){
         return arr;
     }
-    int medio = arr.size();     // 2
-    vector<int> mitad_izq(arr.begin(), arr.begin() + arr.size() / 2);
-    vector<int> mitad_der(arr.size() / 2, arr.end());
+    int medio = arr.size(); 
+    vector<int>mitad_izq;
+    vector<int>mitad_der; 
+    for (int k = 0; k < arr.size() / 2; k++){
+        mitad_izq.push_back(arr[k]);
+    }
+    for (int k = arr.size() / 2; k < arr.size(); k++){
+        mitad_der.push_back(arr[k]);
+    }
     return merge(mitad_izq, mitad_der);
+}
+
+int main(){
+
+    vector<int> arr = {1, 6, 2, 2, 8, 34};
+    vector<int> sorted_arr = merge_sort(arr);
+
+    cout << "The Sorted array elements are: ";
+    for (int i = 0; i < sorted_arr.size(); i++) {
+        cout << sorted_arr[i] << ' ';
+    }
+    return 0;
 }
