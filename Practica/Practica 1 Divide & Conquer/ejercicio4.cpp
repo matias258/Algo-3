@@ -13,6 +13,7 @@ Tenemos un arreglo a = [a1, a2, . . . , an] de n enteros distintos (positivos y 
 Diseñar un algoritmo dividir y conquistar eficiente (cuya complejidad sea de un orden estrictamente menor
 que lineal) que resuelva el problema. Calcule y justifique la complejidad del algoritmo dado.
 */
+///////////////////////////////////////////////////////////////////////////////
 // Esta no funciono, preguntar si es valido y si cumpliria complejidad
 bool indiceEspejo(vector<int> arr, vector<int> indices, int i, int j){
     if (i > j){
@@ -42,6 +43,7 @@ bool indiceEspejo(vector<int> arr, vector<int> indices, int i, int j){
     }
     return false;
 }
+///////////////////////////////////////////////////////////////////////////////
 
 // Busqueda binaria tradicional con la condicion pedida
 bool indiceEspejo2(vector<int> arr, int i, int j){
@@ -63,6 +65,19 @@ bool indiceEspejo2(vector<int> arr, int i, int j){
 bool EspejitoRebotin(vector<int> arr){
     return indiceEspejo2(arr, 0, arr.size() - 1);
 }
+///////////////////////////////////////////////////////////////////////////////
+/*
+Calculemos la complejidad:
+a = 1, elegimos el subproblema más útil
+c = 2, partimos el problema por la mitad
+f(n) = O(1) = Tita(1) = Omega(1), no mergeamos y además el costo de las operaciones fuera de la recurrencia son todas constantes. Como las operaciones se realizan siempre, todos los casos son = O(1)
+
+T(n) = aT(n/2) + f(n) si n > 1; 1 si n <= 1
+Caso 1: O(n^log2(1)-e) = O(n^-e) = O(1/n^e), pero f(n) = O(1) es mayor que O(1/n^e), luego Absurdo!
+Caso 2: Tita(n^log2(1)) = Tita(1) que es exactamente lo que vale f(n), luego pertenece a Caso 2:
+Entonces --> T(n) = Tita(n^log2(a) * log(n)) = Tita(log(n))
+La función encontrada tiene complejidad logarítmica. 
+*/
 
 
 int main(){
