@@ -14,12 +14,23 @@ Dada una secuencia de n enteros, se desea encontrar el maximo valor que se puede
 */
 
 // Anda como el orto
-vector<int> merge (vector<int> izq, int max_izq, vector<int> der, int max_der, vector<int> med, int max_med){
+vector<int> merge (vector<int> izq, vector<int> der, vector<int> med){
+    int izq_sum, der_sum, med_sum = 0;
 
-    if (max_izq > max_med && max_izq > max_der){
+    for(int i = 0; i < izq.size(); i++){
+        izq_sum += izq[i];
+    }
+    for(int i = 0; i < der.size(); i++){
+        der_sum += der[i];
+    }
+    for(int i = 0; i < med.size(); i++){
+        med_sum += med[i];
+    }
+
+    if (izq_sum > med_sum && izq_sum > der_sum){
         return izq;
     }
-    else if(max_der > max_izq && max_der > max_med){
+    else if(der_sum > izq_sum && der_sum > med_sum){
         return der;
     }
     else{
@@ -32,31 +43,32 @@ vector<int> merge_sort(vector<int> arr, int i, int j){
     vector<int>mitad_izq;
     vector<int>mitad_der; 
     vector<int> mitad_med;
-    int max_izq, max_der, max_med = 0;
     if (arr.size() <= 1){
+        return arr;
+    }
+    if (i > j){
         return arr;
     }
     
     int medio = arr.size() / 2;                   // Divide
 
-    for (int k = 0; k < medio; k++){
+    for (int k = 0; k <= medio; k++){
         mitad_izq.push_back(arr[k]);
-        max_izq += arr[k];
     }
-    for (int k = medio; k < arr.size(); k++){
+    for (int k = medio + 1; k < arr.size(); k++){
         mitad_der.push_back(arr[k]);
-        max_der += arr[k];
     }
     for (int k = i; k <= j; k++){
         mitad_med.push_back(arr[k]);
-        max_med += arr[k];
     }
-    mitad_izq = merge_sort(mitad_izq, i, j);            // Conquer
-    mitad_der = merge_sort(mitad_der, i, j);            // Conquer
-    mitad_med = merge_sort(mitad_med, i+1, j);          // Conquer
-    mitad_med = merge_sort(mitad_med, i, j-1);          // Conquer
+    vector<int> maximo = merge(mitad_izq, mitad_der, mitad_med);
 
-    return merge(mitad_izq, max_izq, mitad_der, max_der, mitad_med,max_med);           // Combine
+    vector<int> max_izq = merge_sort(mitad_izq, 0, mitad_izq.size()-1);            // Conquer
+    vector<int> max_der = merge_sort(mitad_der, 0, mitad_der.size()-1);            // Conquer
+    vector<int> max_med_1 = merge_sort(mitad_med, i+1, j);          // Conquer
+    vector<int> max_med_2 = merge_sort(mitad_med, i, j-1);          // Conquer
+
+    return merge(mitad_izq, mitad_der, mitad_med);      // Combine
 }
 
 
