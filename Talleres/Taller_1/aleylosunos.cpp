@@ -16,42 +16,48 @@ using namespace std;
 // 3. n/2;
 // Repetimos con los nuevos valores (1.,2.,3.) hasta obtener 1s y 0s
 // Contamos cuantos 1s hay en la última iteración, dentro del rango l r
-vector<int> merge (vector<int> izq, vector<int> med, vector<int> der){
-    vector<int> mergeados;
-    
-    mergeados.insert(end(mergeados), begin(izq), end(izq)); // concateno izquierda
-    mergeados.insert(end(mergeados), begin(med), end(med)); // concateno medio
-    mergeados.insert(end(mergeados), begin(der), end(der)); // concateno derecha
-    
-    return mergeados;
-}
-
-vector<int> last_row(int n){
-    if (n < 2){
-        return {n};
+int last_row_2(int n, int l, int r){
+    int izq = 0;
+    int med = 0;
+    int der = 0;
+    if (l > r) {
+        return izq + med + der;
     }
-
-    int x1 = n/2;
-    int x2 = n % 2;
-    int x3 = n/2;
-
-    vector<int> izq = last_row(x1);
-    vector<int> med = last_row(x2);
-    vector<int> der = last_row(x3);
-
-    return merge(izq, med, der);
-
+    if (n > 1){
+        izq = last_row_2(n/2, r, l);
+    }
+    if (n > 1){
+        med = last_row_2(n % 2, r, l);
+    }
+    if (n > 1){
+        der = last_row_2(n/2, r, l);
+    }
+    
+    
+    
+    return izq + med + der;
 }
 
 int aleylosuno(int n, int l, int r){
     int sum = 0;
-    vector<int> row = last_row(n);
-    for (int i = l - 1; i < r; i++){
-        sum += row[i];
-    }
+
+    
     return sum;
 }
 
+int main(){
+    /*
+    int n, l, r;
+    cin >> n;
+    cin >> l;
+    cin >> r;
+    */
+
+    cout << last_row_2(10, 2, 4);
+    return 0;
+}
+
+/*
 int main(){
     // Test 1
     int res1 = aleylosuno(6, 3, 6);
@@ -77,3 +83,5 @@ int main(){
     cout << "Test 6 -> Resultado: " << res6 << " | Expected: 5" << endl;
     return 0;
 }
+
+*/
