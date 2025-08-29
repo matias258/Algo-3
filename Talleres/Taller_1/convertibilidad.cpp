@@ -54,45 +54,57 @@ bool se_puede(int x, int y){
 }
 */
 
-vector<int> path;
+
+
 // vector que devuelve la ruta para llegar desde "x" a "y"
-vector<int> camino(int x, int y, vector<int> res){
-    if (path.size() > 0){
+vector<int> path;
+vector<int> camino(int x, int y, vector<int>& res){
+    if (path.size() != 0){
         return path;
     }
-
     if (x == y){
         res.push_back(x);
         path = res;
-        return res;
-    }
-    if (x > y){
-        return {-1};
+        res.pop_back();
+        return path;
     }
     
-    res.push_back(x);
-    vector<int> izq = camino(x*2, y, res);
-    vector<int> der = camino(10*x + 1, y, res);
+    if (x > y || (x*2 > y && x*10 + 1 > y)){
+        return {-1};
+    }
 
+    if (x*2 <= y && x*10 + 1 > y){
+        res.push_back(x);
+        vector<int> izq = camino(x*2, y, res);
+    }
+
+    else{
+        res.push_back(x);
+        vector<int> der = camino(10*x + 1, y, res);
+        vector<int> izq = camino(x*2, y, res);
+    }
+ 
     if (path.size() > 0){
         return path;
     }
+    res.pop_back();
     return {-1};
 }
 
 int main(){
-    int x, y;
 
+    int x, y;
     cin >> x;
     cin >> y;
 
+    vector<int> res = {};
     string resultado_positivo = "YES";
     string resultado_negativo = "NO";
-    vector<int> camino_res = camino(x, y, {});
-    int camino_size_res = camino(x, y, {}).size();
+    vector<int> camino_res = camino(x, y, res);
+    int camino_size_res = camino_res.size();
     //bool bool_res = se_puede(x, y);
 
-    if (camino_size_res > 1){
+    if (camino_size_res != 1){
         cout << resultado_positivo;
         cout << endl;
 
