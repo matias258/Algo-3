@@ -27,7 +27,7 @@ Intentemos implementarla en C++
 */
 
 // Input: array ordenado
-bool busqueda_binaria(vector<int> arr_ordenado, int objetivo, int izq, int der){
+bool busqueda_binaria(vector<int>& arr_ordenado, int objetivo, int izq, int der){
     if (izq > der){
         return false;       // Elemento no encontrado
     }
@@ -50,8 +50,8 @@ bool busqueda(vector<int> arr_ordenado, int objetivo){
 
 
 int main(){
-    vector<int> arr_ordenado = {1, 3, 4, 8, 9};
-    bool res = busqueda(arr_ordenado, 4);
+    vector<int> arr_ordenado = {1, 3, 5, 8, 9};
+    bool res = busqueda(arr_ordenado, 8);
     if (res == true){
         cout << "Encontramos el valor en el array";
     }

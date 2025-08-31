@@ -69,16 +69,16 @@ vector<int> camino(int x, int y, vector<int>& res){
         return path;
     }
     
-    if (x > y || (x*2 > y && x*10 + 1 > y)){
+    if (x > y || (x*2 > y && x*10 + 1 > y)){    // x > y o siguiente x > y
         return {-1};
     }
 
-    if (x*2 <= y && x*10 + 1 > y){
+    if (x*2 <= y && x*10 + 1 > y){              // izq <= y pero der > y
         res.push_back(x);
         vector<int> izq = camino(x*2, y, res);
     }
 
-    else{
+    else{                                       // izq y der <= y, pues si der < y --> izq < y
         res.push_back(x);
         vector<int> der = camino(10*x + 1, y, res);
         vector<int> izq = camino(x*2, y, res);

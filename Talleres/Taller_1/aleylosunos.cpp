@@ -16,26 +16,17 @@ using namespace std;
 // 3. n/2;
 // Repetimos con los nuevos valores (1.,2.,3.) hasta obtener 1s y 0s
 // Contamos cuantos 1s hay en la última iteración, dentro del rango l r
-int last_row_2(int n, int l, int r){
-    int izq = 0;
-    int med = 0;
-    int der = 0;
-    if (l > r) {
-        return izq + med + der;
+int last_row_2(int n, int izq, int der, int tamaño, int sum){
+
+    if (n == 1){
+        sum ++;
     }
-    if (n > 1){
-        izq = last_row_2(n/2, r, l);
+    //Jugar con el tamaño y las cotas izq y der, no esta nada terminado.
+    if (tamaño < der - izq){
+        return last_row_2(n/2, izq )
     }
-    if (n > 1){
-        med = last_row_2(n % 2, r, l);
-    }
-    if (n > 1){
-        der = last_row_2(n/2, r, l);
-    }
-    
-    
-    
-    return izq + med + der;
+
+    return last_row_2(n/2, izq, der-1, tamaño + 1, sum) + last_row_2()
 }
 
 int aleylosuno(int n, int l, int r){
@@ -44,20 +35,20 @@ int aleylosuno(int n, int l, int r){
     
     return sum;
 }
-
+/*
 int main(){
-    /*
+    
     int n, l, r;
     cin >> n;
     cin >> l;
     cin >> r;
-    */
+    
 
     cout << last_row_2(10, 2, 4);
     return 0;
 }
+*/
 
-/*
 int main(){
     // Test 1
     int res1 = aleylosuno(6, 3, 6);
@@ -84,4 +75,3 @@ int main(){
     return 0;
 }
 
-*/
