@@ -91,23 +91,63 @@ vector<int> camino(int x, int y, vector<int>& res){
     return {-1};
 }
 
+vector<int> path_inverso;
+vector<int> camino_inversa(int x, int y, vector<int>& res){
+    if (path_inverso.size() != 0){
+        return path_inverso;
+    }
+
+    if (x == y){
+        res.insert(res.begin(), y);
+        path_inverso = res;
+        res.erase(res.begin());
+        return path_inverso;
+    }
+    if (x > y){
+        return {-1};
+    }
+
+    // "y" es par entonces solo puede venir de y / 2
+    if (y % 2 == 0){
+        res.insert(res.begin(), y);
+        vector<int> izq = camino_inversa(x, y/2, res);
+    }
+
+    // "y" termina en 1 (ej 41), solo puede venir de (y-1) / 10
+    else if (y % 10 == 1){   
+        res.insert(res.begin(), y);
+        vector<int> der = camino_inversa(x, (y-1)/10, res);
+    }
+    // "y" es impar y no termina en 1 (ej 45), entonces es imposible llegar
+    else{
+        return {-1};
+    }
+
+    if (path_inverso.size() != 0){
+        return path_inverso;
+    }
+
+    res.erase(res.begin());
+    return {-1};
+}
+
+
 int main(){
 
     int x, y;
+
     cin >> x;
     cin >> y;
 
     vector<int> res = {};
     string resultado_positivo = "YES";
     string resultado_negativo = "NO";
-    vector<int> camino_res = camino(x, y, res);
+    vector<int> camino_res = camino_inversa(x, y, res);
     int camino_size_res = camino_res.size();
-    //bool bool_res = se_puede(x, y);
 
     if (camino_size_res != 1){
         cout << resultado_positivo;
         cout << endl;
-
         cout << camino_size_res;
         cout << endl;
 
@@ -122,77 +162,37 @@ int main(){
 }
 
 /*
-int main(){
-    // Caso 1
-    path.clear();
-    vector<int> res1 = camino(1, 21, {});
-    cout << "Camino de 1 a 21: ";
-    for (int v : res1) cout << v << " ";
-    cout << "   // Expected: 1 2 21" << endl;
+void test_case(int x, int y, const string& expected){
+    path_inverso.clear();
+    vector<int> res = {};
+    vector<int> camino_res = camino_inversa(x, y, res);
 
-    // Caso 2
-    path.clear();
-    vector<int> res2 = camino(1, 41, {});
-    cout << "Camino de 1 a 41: ";
-    for (int v : res2) cout << v << " ";
-    cout << "   // Expected: 1 4 41" << endl;
-
-    // Caso 3
-    path.clear();
-    vector<int> res3 = camino(1, 11, {});
-    cout << "Camino de 1 a 11: ";
-    for (int v : res3) cout << v << " ";
-    cout << "   // Expected: 1 11" << endl;
-
-    // Caso 4 (sin camino válido)
-    path.clear();
-    vector<int> res4 = camino(1, 1621, {});
-    cout << "Camino de 1 a 1621: ";
-    for (int v : res4) cout << v << " ";
-    cout << "   // Expected: 2 4 8 81 162" << endl;
-
-    // Caso 5
-    path.clear();
-    vector<int> res5 = camino(2, 162, {});
-    cout << "Camino de 2 a 162: ";
-    for (int v : res5) cout << v << " ";
-    cout << "   // Expected: 2 16 162" << endl;
-
-    // Caso 6
-    path.clear();
-    vector<int> res6 = camino(1, 82, {});
-    cout << "Camino de 2 a 162: ";
-    for (int v : res6) cout << v << " ";
-    cout << "   // Expected: 1 2 4 41 82" << endl;
-
-    // Caso 7
-    path.clear();
-    vector<int> res7 = camino(2, 45, {});
-    cout << "Camino de 2 a 162: ";
-    for (int v : res7) cout << v << " ";
-    cout << "   // Expected: -1" << endl;
-
-
-    return 0;
-}
-*/
-
-/*
-main(){
-    bool res = se_puede(1, 82);
-    cout << "Se puede llegar de 1 a 82? " << res <<"\n";
-    
-    bool res2 = se_puede(2, 45);
-    cout << "Se puede llegar de 2 a 45? " << res2<<"\n";
-
-    vector<int> res3 = camino(1, 82, {});
-    cout << "Camino desde 1 a 82: ";
-    for (int v : res3) {
-        cout << v << " ";
+    if (camino_res.size() != 1){
+        cout << "YES\n";
+        cout << camino_res.size() << "\n";
+        for (int v : camino_res) cout << v << " ";
+        cout << " // Expected: " << expected << "\n";
+    } else {
+        cout << "NO // Expected: " << expected << "\n";
     }
-    cout << endl;
+}
 
+int main(){
+    // Casos con camino posible
+    test_case(1, 21,  "1 2 21");
+    test_case(1, 41,  "1 2 4 41");
+    test_case(2, 162, "2 16 162");
+    test_case(3, 12,  "3 6 12");
+    test_case(7, 71,  "7 71");
+
+    // Casos imposibles
+    test_case(2, 45,  "-1");
+    test_case(1, 12,  "-1");
+    test_case(1, 101, "-1");
+    test_case(5, 100, "-1");
 
     return 0;
 }
 */
+
+

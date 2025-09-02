@@ -16,7 +16,7 @@ using namespace std;
 // 3. n/2;
 // Repetimos con los nuevos valores (1.,2.,3.) hasta obtener 1s y 0s
 // Contamos cuantos 1s hay en la última iteración, dentro del rango l r
-vector<int> last_row(int& n, int l, int r){
+vector<int> last_row(int& n){
     if (n < 2){
         return {n};
     }
