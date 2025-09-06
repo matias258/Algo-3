@@ -13,14 +13,6 @@ Lu se dedica a la compra de asteroides. Sea p ∈ N^n tal que p_i es el precio d
 Debido a las dificultades que existen en el transporte y almacenamiento de asteroides, Lu puede comprar a lo sumo un asteroide cada día, puede vender a lo sumo un asteroide cada día y comienza sin asteroides. Además, el Ente Regulador Asteroidal impide que Lu venda un asteroide que no haya comprado. Queremos encontrar la máxima ganancia neta que puede obtener Lu respetando las restricciones indicadas. Por ejemplo, si p = (3, 2, 5, 6) el resultado es 6 y si p = (3, 6, 10) el resultado es 7. Notar que en una solución óptima, Lu debe terminar sin asteroides.
 */
 
-/*
-
-
-
-5. Formalmente, el problema consiste en determinar el máximo g = Sum(i=1, n, xipi) para un vector 
-x = (x_1, . . . , x_n) tal que: x_i ∈ {−1, 0, 1} para todo 1 ≤ i ≤ n y Sum(i=1, j, x_i <= 0) para todo 
-1 ≤ j ≤ n. Demostrar que la formulación recursiva es correcta.
-*/
 
 /*
 1. Encontrar los casos base y los pasos recursivos para calcular la máxima ganancia neta (m.g.n.) que puede obtener Lu.
@@ -62,40 +54,119 @@ Entonces astro_trade(0, |p|) = max ganancia neta que puede obtener Lu
 /*
 4. Diseñar un algoritmo de PD top-down que resuelva el problema. Explicar su complejidad temporal y espacial auxiliar. Decidir si se cumple la propiedad de superposición de subproblemas.
 */
-
-
+int NEG = -1e9;
 int astro_trade(int a, int d, vector<int> p){
-    if (d == p.size()){     // Terminé el recorrido 
-        return 0;
+    if (d == p.size()){
+        if (a == 0) return 0;
+        else return NEG;
     }
-    if (a > p.size() - d || a < 0){    // tengo mas asteroides que dias --> no es solucion
-        return -1e9;     // tengo -1 asteroides? wtf hermano --> no es solucion
+    if (a > p.size() - d || a < 0) return NEG; // inválido
+    int nada   = astro_trade(a, d+1, p);
+    int compro = NEG;
+    if (a < p.size() - d){
+        compro = astro_trade(a+1, d+1, p) - p[d];
     }
-
-    int compro = astro_trade(a+1, d+1, p) - p[d];
-    int vendo = astro_trade(a-1, d+1, p) + p[d];
-    int nada = astro_trade(a, d+1, p);
-
-    return max(compro, max(vendo, nada));
-    
+    int vendo  = NEG;
+    if (a > 0){
+        vendo = astro_trade(a-1, d+1, p) + p[d];
+    }
+    // Una vez que vi todos los casos del día d, guardo el más óptimo en memo, repito
+    int maximo = max(nada, max(compro, vendo));
+    return maximo;
 }
-
-int astro_trade_dinamica(int a, int d, vector<int> p, vector<int>& memo){
-    
-}
-
-
 /*
-astro_trade(0, 0, {3, 2, 5, 6}) devuelve 9 cuando deberia volver 6
-Por que pasa esto?
-Porque el programa se "olvida" que vendió en cierto día y combina mal los resultados parciales
-Para combatir esto, es necesario implementar memoizacion, una memoria que se acuerde de estas operaciones
+Veamos por Dinamica
 */
+
+int Neg = -1e9;
+int astro_trade_din(int a, int d, vector<int>& p, vector<vector<int>>& memo) {
+    if (d == p.size()){
+        if (a == 0) return 0;
+        else return Neg;
+    }
+    if (a > p.size() - d || a < 0) return Neg; // inválido
+    if (memo[d][a] != Neg) return memo[d][a];
+    int nada   = astro_trade_din(a, d+1, p, memo);
+    int compro = Neg;
+    if (a < p.size() - d){
+        compro = astro_trade_din(a+1, d+1, p, memo) - p[d];
+    }
+    int vendo  = Neg;
+    if (a > 0){
+        vendo = astro_trade_din(a-1, d+1, p, memo) + p[d];
+    }
+    // Una vez que vi todos los casos del día d, guardo el más óptimo en memo, repito
+    memo[d][a] = max(nada, max(compro, vendo));
+    return memo[d][a];
+}
 
 int main(){
     vector<int> precios = {3, 2, 5, 6};
-    vector<int> memo(precios.size(), 0);
-    int res = astro_trade(0, 0, precios);
-    cout << res;
+    vector<vector<int>> memo(precios.size()+1, vector<int>(precios.size()+1, Neg));
+    int res = astro_trade_din(0, 0, precios, memo);
+    int res2 = astro_trade(0, 0, precios);
+    cout << res << endl; 
+    
+    for (int i = 0; i < memo.size(); ++i) {
+        for (int j = 0; j < memo[i].size(); ++j) {
+            if (memo[i][j] == Neg)
+                cout << "N ";
+            else
+                cout << memo[i][j] << " "; // i is the row (day d), j is the column (asteroids a)
+        }
+        cout << endl;
+    }
+    cout << "Por backtracking" << endl;
+    cout << res2 << endl;
     return 0;
 }
+
+/*
+res: 6
+
+Memo:
+6 N N N N
+4 9 N N N
+1 6 11 N N
+0 6 N N N
+N N N N N
+
+ej: memo[0][0] = 6 
+significa que la mayor ganancia desde dia = 0, asteroide = 0 que puedo tener es 6.
+Ademas es la ultima ejecucion, es decir que desde aca obtenemos el mejor resultado (pues ya pasamos por todos los otros).
+
+memo[2][2] = 11
+significa que la meyor ganancia desde dia = 2, asteroide = 2 que puedo tener es 11
+Pero no toma en cuenta los dias anteriores, por lo que no toma en cuenta cuanto nos costó comprarlos.
+En este caso -3 y -2, con lo que nos quedaria 11 -5 = 6. Es por eso que nuestro valor max no es 11 sino 6.
+*/
+
+/*
+Calculemos la complejidad.
+Astro_trade normal:
+1. Complejidad espacial: n = |p|, el resto usa espacio O(1) --> O(n)
+2. Complejidad temporal: Como maximo, 3 llamadas recursivas --> T(n) = 3T(n-1) + O(1) (operaciones ctes)
+Entonces:
+T(n) = 3T(n-1) = 3(3T(n-2)) = ... = 3^(n-1)
+O(n) = 3^n
+
+Ahora las de astro_trade_dinamica:
+1. Complejidad espacial: memo = matriz n x n --> O(n^2), el resto a lo sumo es O(n)
+Luego O(n^2 + n) = O(n^2)
+2. Complejidad temporal: Como memo nos ayuda a calcular en O(1) las recurrencias repetidas, es importante preguntarse lo siguiente --> ¿Cuántos estados únicos hay?
+Los días van de 0 a n --> existen n días
+Los asteroides van de 0 a n --> existen n asteroides
+Luego las combinaciones únicas son n x n --> n^2
+Entonces es O(n^2)
+Como ademas siempre rellenamos la matriz en peor mejor y caso promedio, entonces 
+O(n^2) = Tita(n^2) = Omega(n^2)
+Por lo tanto, astro_trade_din es tambien Omega(n^2)
+ ----------------------------------------------------------------------
+| Algoritmo             |Complejidad Temporal | Complejidad Espacial |
+|-----------------------|---------------------|----------------------|
+| Backtracking (recurs) |    O(3^n)           |    O(n)              |
+| DP Top-Down (memo)    |    Omega(n^2)       |    O(n^2)            |
+
+Luego astro_trade_din es mas rapida en tiempo que astro_trade por backtracking, pues
+para todo n > 1, n^2 < 3^n
+*/
