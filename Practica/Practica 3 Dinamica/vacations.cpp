@@ -9,6 +9,7 @@
 #include <algorithm>
 using namespace std;
 
+// Por si me pinta ver lo que guardó la matriz
 void print_memo_matrix(const vector<vector<int>>& memo) {
     for (int i = 0; i < memo.size(); ++i) {
         for (int j = 0; j < memo[0].size(); ++j) {
@@ -84,12 +85,12 @@ int vacations_dp(int d, int n, int eleccion, vector<vector<int>>& memo){
     int hacer_nada = INT_MAX;
 
     // Tengo opcion de hacer gym
-    if (find(dias_gym.begin(), dias_gym.end(), d) != dias_gym.end() && eleccion != 1){
+    if (dias_gym[d] == 1 && eleccion != 1){
         hacer_gym = vacations_dp(d+1, n, 1, memo);
     }
     // Tengo opcion de hacer compe
-    if (find(dias_compe.begin(), dias_compe.end(), d) != dias_compe.end() && eleccion != 2){
-        hacer_compe = vacations_dp(d+1, n, 1, memo);
+    if (dias_compe[d] == 1 && eleccion != 2){
+        hacer_compe = vacations_dp(d+1, n, 2, memo);
     }
     // Siempre puedo no hacer nada
     hacer_nada = vacations_dp(d+1, n, 0, memo) + 1;
@@ -102,14 +103,16 @@ int vacations_dp(int d, int n, int eleccion, vector<vector<int>>& memo){
 
 int main(){
     int n;
-    cout << "Ingrese el numero de dias: ";
+    
     cin >> n;
 
     vector<int> atributos(n);
-    cout << "Ingrese los " << n << " atributos separados por espacios (0=nada, 1=compe, 2=gym, 3=ambos):" << endl;
     for (int i = 0; i < n; ++i) {
         cin >> atributos[i];
     }
+        
+    // n = 7;
+    // vector<int> atributos = {1, 3, 3, 2, 1, 2, 3};
 
     // Limpiamos los vectores para asegurar que no tengan datos anteriores.
     dias_compe.clear();
@@ -118,10 +121,16 @@ int main(){
     // Llenamos los vectores dias_compe y dias_gym.
     for (int i = 0; i < n; ++i){
         if (atributos[i] == 1 || atributos[i] == 3){
-            dias_compe.push_back(i);
+            dias_compe.push_back(1);
+        }
+        else {
+            dias_compe.push_back(0);
         }
         if (atributos[i] == 2 || atributos[i] == 3){
-            dias_gym.push_back(i);
+            dias_gym.push_back(1);
+        }
+        else {
+            dias_gym.push_back(0);
         }
     }
 
@@ -132,8 +141,9 @@ int main(){
     // El estado inicial es el día 0, con la opción de "nada" en el día -1.
     int res = vacations_dp(0, n, 0, memo);
     
-    // **BUG ARREGLADO:** Imprimimos el resultado final, no los vectores.
-    cout << "El numero minimo de dias de descanso es: " << res << endl;
+
+
+    cout << res << endl;
     
     return 0;
 }
