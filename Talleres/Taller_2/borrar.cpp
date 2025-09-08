@@ -78,29 +78,43 @@ f(operacion, substring) = {0 si |a| = 0
 El neutro que utilizaremos para no pisar valores será el Int_Max, pues buscamos la MINIMA cantidad de operaciones. 
 */
 
-int borrar(int n, string a){
+//Intentemos implementar un LIS (Longest Increasing Subsequence) estilo de codigo para buscar la mayor # de repetidos seguidos en el string (https://www.youtube.com/watch?v=aPQY__2H3tE&t=837s)
+int borrar(int n, string a, int acciones, vector<vector<int>>& memo){
     if (a.size() < 1){
-        return 0;
+        return acciones;
+    }
+    if (memo[d][eleccion] != INT_MAX){
+        return memo[d][eleccion];
     }
 
-    int medio = a.size() / 2;           // elijo medio
-    while (a[medio-1] == a[medio]){     // si justo caigo en letras iguales a-medio-a, desplazo el medio
-        medio = medio - 1;
-    }
-
-    string izq(a.begin(), a.begin() + medio - 1);
-    string der(a.begin() + medio, a.end());
-
+    int l = -1;
+    int r = -1;
+    int guardo_repes = 1;
+    int repetidos = 1;
     
+    for (int i = 0; i < a.size(); i++){
+        if (a[i] == a[i+1]){
+            repetidos++;
+        }
+        else{
+            guardo_repes = repetidos;
+            l = i+1 - repetidos;
+            r = i;
+            repetidos = 1;
+        }
+    }
 
-
+    a.erase(a.begin() + l, a.end());
+    return borrar(a.size(), a, acciones + 1);
 }
 
 
 int main(){
-    int n = 6;
-    string a = {"aaabbb"};
-    int res = borrar(n, a);
+    
+    int n = 10;
+    vector<vector<int>> memo(n, vector<int>(n, INT_MAX));
+    string a = {"abccabccab"};
+    int res = borrar(n, a, 0, memo);
     cout << res;
     return 0; 
 }
