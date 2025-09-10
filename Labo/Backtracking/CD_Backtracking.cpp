@@ -3,6 +3,8 @@
 using std::vector;
 using std::cout;
 
+// PROBLEMA DE LA MOCHILAAAAAAA
+
 // Solo calcula res (sin podas ni combinaciones)
 void CD_sin_podas(int suma, int i) {
     extern int res, k, n;
