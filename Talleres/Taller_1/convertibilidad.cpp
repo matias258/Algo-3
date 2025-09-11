@@ -113,12 +113,12 @@ vector<int> camino_inversa(int x, int y, vector<int>& res){
         vector<int> izq = camino_inversa(x, y/2, res);
     }
 
-    // "y" termina en 1 (ej 41), solo puede venir de (y-1) / 10
+    // "y" termina en 1 (ejemplo 41), solo puede venir de (y-1) / 10
     else if (y % 10 == 1){   
         res.insert(res.begin(), y);
         vector<int> der = camino_inversa(x, (y-1)/10, res);
     }
-    // "y" es impar y no termina en 1 (ej 45), entonces es imposible llegar
+    // "y" es impar y no termina en 1 (ejemplo 45), entonces es imposible llegar
     else{
         return {-1};
     }

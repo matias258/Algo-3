@@ -47,74 +47,48 @@ Condiciones Iniciales
 2. Necesitamos tmb saber cuantas operaciones llevamos
 Obtenemos lo siguiente: f(operacion, substring)
 
-Recursion?
-Cuando no tenemos que hacer recursion?
-Si llegamos al caso base --> |a| == 0, terminamos
+Funcion matematica de recurrencia:
+
+f(count, s) =   { count                     , si |s| < 1
+                { f(count + 1, borrar(s))   , si |s| >= 1
+
+Donde   count       -> int que suma la cantidad de operaciones
+        s           -> string en donde vamos a borrar los chars repetidos
+        borrar(s)   -> funcion que borra chars de s y devuelve un substring de s sin esos chars
 
 Neutros de la operacion
-Cuando retornamos los resultados de los casos base, es importante saber qué queremos representar. Estos suelen ser el neutro de la operación que usamos recursivamente. 
-En nuestro caso queremos representar la cantidad minima de operaciones necesaria para "borrar" el string a. En ese caso lo que queremos es:
-1. Retornar 0 porque ya terminamos de "borrar" todo a.
-
-Firma de la funcion con casos base:
-f(operacion, substring) = {0 si |a| = 0}
-
-Definiendo casos recursivos de f
-Sabemos que estamos en un momento valido porque ya cubrimos los casos base.
-Que estados posibles pueden darse si estamos en un momento i?
-1. nos encontramos con un string con x repetidos, x > 1
-2. nos encontramos con un string con sólo 1 repetido
-
-Otra forma de ver lo anterior:
-1. Si puedo borrar x repetidos -> lo hago
-2. Si no, hago recursion hasta que pueda
-
-La funcion nos quedaria:
-borrar_substring(operacion + 1, substring) --> Encontramos un substring con todos repetidos (ej "aa")
-
-f(operacion, substring) = {0 si |a| = 0
-                          {min(borrar_substring(operacion + 1, substring), f(operacion, substring)) sino
 
 El neutro que utilizaremos para no pisar valores será el Int_Max, pues buscamos la MINIMA cantidad de operaciones. 
 */
 
 //Intentemos implementar un LIS (Longest Increasing Subsequence) estilo de codigo para buscar la mayor # de repetidos seguidos en el string (https://www.youtube.com/watch?v=aPQY__2H3tE&t=837s)
-int borrar(int n, string a, int acciones, vector<vector<int>>& memo){
-    if (a.size() < 1){
-        return acciones;
-    }
-    if (memo[d][eleccion] != INT_MAX){
-        return memo[d][eleccion];
-    }
+string borrar(string s){
 
-    int l = -1;
-    int r = -1;
-    int guardo_repes = 1;
-    int repetidos = 1;
-    
-    for (int i = 0; i < a.size(); i++){
-        if (a[i] == a[i+1]){
-            repetidos++;
-        }
-        else{
-            guardo_repes = repetidos;
-            l = i+1 - repetidos;
-            r = i;
-            repetidos = 1;
-        }
-    }
-
-    a.erase(a.begin() + l, a.end());
-    return borrar(a.size(), a, acciones + 1);
 }
+
+int funcion(int n, string s, int count){
+    // Caso base: |s| == 0
+    if (s.size() <= 0){
+        return count;
+    }
+    else{
+        funcion(n, borrar(s), count + 1);
+    }
+
+    // retornamos el minimo entre el count y borrar
+    return min(count, funcion(n, borrar(s), count + 1));
+    
+}
+
 
 
 int main(){
     
-    int n = 10;
-    vector<vector<int>> memo(n, vector<int>(n, INT_MAX));
+    
     string a = {"abccabccab"};
-    int res = borrar(n, a, 0, memo);
+    int n = a.size();
+    vector<vector<int>> memo(n, vector<int>(n, INT_MAX));
+    int res = funcion(n, a, 0);
     cout << res;
     return 0; 
 }
