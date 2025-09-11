@@ -41,7 +41,8 @@ Como hay 9 bloquecitos --> nuestros cuadrados van a comenzar en 1 1 1 1 1 1 1 1 
 9 9 9 9 9 9 9 9 9, es decir que hay casi 1 billón de combinaciones posibles.
 
 Si lo pensáramos para codear, obtendríamos 9 for loops de 1 a n^2 uno adentro del otro, es decir:
-(n^2)^9 = O(n^18) totalmente inpractico.
+(n^2)^9 = O(n^18) totalmente inpractico. --> n^(n^2)
+Luego la complejidad de brute force es de O(n^(n^2))
 
 b) Enunciar un algoritmo que use backtracking para resolver 
    este problema que se base en las siguientes ideas:
@@ -57,28 +58,21 @@ b) Enunciar un algoritmo que use backtracking para resolver
    Mostrar los primeros dos niveles del árbol de backtracking 
    para n = 3.
 */
-// Pseudocodigo
-matriz nxn rellena de 1s
-magicuadrados(n, i, j, matriz){
-    si llego a pos[i][j] = [n-1][n-1]{
-        si (suma de is == suma de js && suma de is son iguales && suma de diags = suma de is){
-            return 1 + magicuadrados(n, 0, 0, matriz_distinta?)
-        }
-        else return 0 + magicuadrados(n, 0, 0, matriz_distinta?)
-    }
-
-    suma_i = 
-
-
-
-}
-
-
+"""
+// Funcion matematica definida por casos
+               { 1            si i = n y C es un cuadrado magico completo
+f(C, i, j) =   { 0            si i = n y C NO es magico
+               { 0            si suma_fila[i] || sumacolumna[j] || sumadiag[i][j] > numero magico
+               { Sum(k ∈ U, f(C u {k}, siguiente(i, j)))
+U: conj de numeros aún no usados en C
+"""
 /*
 
 c) Demostrar que el árbol de backtracking tiene O((n²)!) nodos 
    en peor caso.
 
+
+   
 d) Considere la siguiente poda al árbol de backtracking: al 
    momento de elegir el valor de una nueva posición, verificar 
    que la suma parcial de la fila no supere el número mágico. 
