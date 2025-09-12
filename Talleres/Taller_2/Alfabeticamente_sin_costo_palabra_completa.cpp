@@ -54,13 +54,9 @@ int estan_en_orden(string& palabra) {
     return -1;
 }
 
-int alfabeticamente(vector<int> c, vector<string> palabras, int gasto, int i, vector<string> ordenado){
+int alfabeticamente(vector<int> c, vector<string> palabras, int gasto, int i){
     if (i == palabras.size()){
-        for (int j = 0; j < ordenado.size() - 1;j++){
-            if (ordenado[j] > ordenado[j+1]){
-                return -1;
-            }
-        }
+       
         return gasto;
     }
 
@@ -69,8 +65,7 @@ int alfabeticamente(vector<int> c, vector<string> palabras, int gasto, int i, ve
 
     if (estan_en_orden(palabras[i]) == 0){
         // no hace falta reordenar, prosigo
-        ordenado.push_back(palabras[i]);
-        prosigo = alfabeticamente(c, palabras, gasto, i+1, ordenado);
+        prosigo = alfabeticamente(c, palabras, gasto, i+1);
     }
 
     // no se pudo ordenar una string --> no se puede ordenar palabra
@@ -80,18 +75,15 @@ int alfabeticamente(vector<int> c, vector<string> palabras, int gasto, int i, ve
 
     // se pudo reordenar una string
     if (estan_en_orden(palabras[i]) == 1) { 
-        string reversa_mami = palabras[i];
-        reverse(reversa_mami.begin(), reversa_mami.end());
-        ordenado.push_back(reversa_mami);
-        reordeno = alfabeticamente(c, palabras, gasto + 1, i+1, ordenado);
+        reordeno = alfabeticamente(c, palabras, gasto + 1, i+1);
     }
     
     int minimo = min(prosigo, reordeno);
     return minimo;
 }
 
-int gasto_alfabetico(vector<int> c, vector<string> palabras, int gasto, int i, vector<string> ordenado ){
-    int gastar = alfabeticamente(c, palabras, 0, 0, ordenado);
+int gasto_alfabetico(vector<int> c, vector<string> palabras, int gasto, int i){
+    int gastar = alfabeticamente(c, palabras, 0, 0);
     if (gastar > 0){
         int costo = c[gastar - 1];
         return costo;
@@ -99,26 +91,6 @@ int gasto_alfabetico(vector<int> c, vector<string> palabras, int gasto, int i, v
     if (gastar == -1){
         return -1;
     }
-    return 0;
-}
-
-int main(){
-    {
-        int n = 2;
-        vector<int> c = {100, 200};
-        vector<string> palabras = {"fed", "cba"};  // Invierte "fed" a "def", "cba" a "abc"; pero "def" > "abc"? No, but after merge check
-        int res = gasto_alfabetico(c, palabras, 0, 0, {});
-        cout << "Test 1 (dos desordenadas, no ordenables) -> expected -1, obtenido " << res << endl;
-    }
-
-    {
-        int n = 2;
-        vector<int> c = {100, 200};
-        vector<string> palabras = {"fed", "zzyf"};  // Invierte "fed" a "def", "cba" a "abc"; pero "def" > "abc"? No, but after merge check
-        int res = gasto_alfabetico(c, palabras, 0, 0, {});
-        cout << "Test 2 (dos desordenadas, ordenables) -> expected 200, obtenido " << res << endl;
-    }
-
     return 0;
 }
 
@@ -134,13 +106,13 @@ int main(){
     for (int i = 0; i < n; ++i) {
         cin >> palabras[i];
     }
-    cout << gasto_alfabetico(c, palabras, 0, 0, {}) << endl;
+    cout << gasto_alfabetico(c, palabras, 0, 0) << endl;
     return 0;
 }
 */
 
 
-/*
+
 int main(){
     // Test 1: Palabras ya ordenadas, no se necesita inversión
     {
@@ -277,4 +249,3 @@ int main(){
 
     return 0;
 }
-    */

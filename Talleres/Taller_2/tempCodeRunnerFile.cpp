@@ -1,1 +1,1 @@
-)
+gasto_alfabetico
