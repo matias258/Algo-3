@@ -63,21 +63,45 @@ El neutro que utilizaremos para no pisar valores será el Int_Max, pues buscamos
 
 //Intentemos implementar un LIS (Longest Increasing Subsequence) estilo de codigo para buscar la mayor # de repetidos seguidos en el string (https://www.youtube.com/watch?v=aPQY__2H3tE&t=837s)
 string borrar(string s){
-
+    int left = 0;
+    int right = 1;
+    int repes = 1;
+    int max_repe = 1;
+    for (int i = 0; i < s.size() - 1; i++){
+        if (s[i] == s[i+1]){
+            repes++;
+        }
+        else{
+            if (max_repe < repes){
+                max_repe = repes;
+                right = i;
+                left = i - repes;
+                repes = 1;
+            }
+        }
+    }
+    s.erase(left + 1, right - left);
+    return s;
 }
 
-int funcion(int n, string s, int count){
+
+
+int funcion(int n, string& s, int count){
     // Caso base: |s| == 0
     if (s.size() <= 0){
         return count;
     }
-    else{
-        funcion(n, borrar(s), count + 1);
+    if (s.size() == 1){
+        return count + 1;
+    }
+    
+    for (int i = 0; i < s.size(); i++){
+        s = borrar(s);
+        funcion(n, s, count+1);
     }
 
     // retornamos el minimo entre el count y borrar
     return min(count, funcion(n, borrar(s), count + 1));
-    
 }
 
 
@@ -92,3 +116,4 @@ int main(){
     cout << res;
     return 0; 
 }
+
