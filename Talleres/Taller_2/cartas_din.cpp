@@ -13,7 +13,6 @@ using namespace std;
 Hay n * k cartas, hay k puntajes y n favoritas. puntajes es creciente.
 */
 
-
 // Me construyo un map con key: numeros de las cartas; values: repeticiones de esos numeros
 map<int, int> repes(vector<int> cartas){
     map<int, int> m = {};
@@ -28,36 +27,54 @@ map<int, int> repes(vector<int> cartas){
     return m;
 }
 
-int cartas(int n, int k, map<int, int> m, vector<int>& favoritas, vector<int>& puntaje, size_t it, size_t i){
-    if (it == favoritas.size()){
-        return 0;
+int cartas(map<int, int> m, vector<int>& favoritas, vector<int>& puntaje, int puntos, vector<int>& todas_cartas, size_t it, size_t cartas_usadas, vector<vector<int>>& memo, int iterar){
+    if (it == favoritas.size() || cartas_usadas == todas_cartas.size()){
+        return puntos;
     }
-    int puntos = 0;
+    if (memo[it][cartas_usadas] != -1){
+        return memo[it][cartas_usadas];
+    }
 
-    // Si:  Encuentro la carta en el dict y
-    //      la carta tiene valores disponibles y
-    //      puedo seguir sumando puntos
-    if (m.find(favoritas[it]) != m.end() && m[favoritas[it]] > 0 && i < puntaje.size()){
+    int maximo = 0;
+
+    if (m[favoritas[it]] > 0){
 
         m[favoritas[it]] = m[favoritas[it]] - 1; // elimino la que voy a agregar
-
         // sigo con el mismo jugador
-        int puntos_seguir = cartas(n, k, m, favoritas, puntaje, it, i+1);
+        int puntos_seguir = cartas(m, favoritas, puntaje, puntaje[iterar], todas_cartas, it, cartas_usadas + 1, memo, iterar+1);
 
         // pasar directamente al prox jugador
-        int puntos_pasar = puntaje[i] + cartas(n, k, m, favoritas, puntaje, it + 1, 0);  
-
+        int puntos_pasar = puntaje[cartas_usadas] + cartas(m, favoritas, puntaje, puntos, todas_cartas, it + 1, cartas_usadas, memo, 0);  
+        m[favoritas[it]]++; 
         // Tomo el resultado
-        puntos = max(puntos_seguir, puntos_pasar);
-
-        m[favoritas[it]]++;
+        maximo = max(puntos_seguir, puntos_pasar);
     }
-    // Si no encuentro la carta en el dict (no tengo cartas favs para el jugador) o
-    // Si no puedo seguir sumando puntos
-    // --> Cambio de jugador
-    puntos = max(puntos, cartas(n, k, m, favoritas, puntaje, it + 1, 0));
 
-    return puntos;
+    // Si no puedo seguir sumando puntos --> Cambio de jugador
+    else{
+        maximo = max(maximo, cartas(m, favoritas, puntaje, puntos, todas_cartas, it + 1, cartas_usadas, memo, 0));
+    }
+    memo[it][cartas_usadas] = maximo;
+    return maximo;
+}
+
+
+int main(){
+        {
+        // Si le doy los dos 10 al jugador 1, obtengo 15 pts. 
+        // En cambio si doy un 10 al jugador 1 y otro 10 al jugador 3 --> 10 + 10 = 20 > 15 pts
+        // Le agrego los dos de 20 al jugador 2 --> 15pts 
+        // Obtengo 20 + 15 --> 35
+        vector<int> todas_cartas = {10, 10, 20, 20, 99, 98};
+        vector<int> favoritas = {10, 20, 10};
+        vector<int> puntaje = {10, 15}; 
+        map<int,int> m = repes(todas_cartas);
+        int n = 3, k = 2;
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(m, favoritas, puntaje, 0, todas_cartas, 0, 0, memo, 0);
+        cout << "Test 11 -> expected 35, obtenido " << res << endl;
+    }
+    return 0;
 }
 
 /*
@@ -88,14 +105,15 @@ int main() {
     }
 
     map<int, int> m = repes(todas_cartas);
-
-    int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+    vector<vector<int>> memo(n+1, vector<int>(n, -1));
+    int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
     cout << res;
     return 0;
 }
 */
 
-int main() {
+/*
+int main() { 
 
     {
         vector<int> todas_cartas = {1,1,2,2}; // 4 cartas
@@ -103,7 +121,9 @@ int main() {
         vector<int> puntaje = {10,20};        // h1=10, h2=20
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
+
         // Mejor reparto: un jugador recibe las dos '1' -> h2=20, otro h0=0 -> total 20
         cout << "Ejemplo 2 -> expected 20, obtenido " << res << endl;
     }
@@ -119,7 +139,8 @@ int main() {
         vector<int> puntaje = {10,20,30,40,50}; // h1..h5 (h1 != 0)
         map<int,int> m = repes(todas_cartas);
         int n = 5, k = 5;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // cada jugador recibe 5 de su favorito -> h5 = 50 -> total = 5 * 50 = 250
         cout << "Ejemplo 1 -> expected 250, obtenido " << res << endl;
     }
@@ -137,7 +158,8 @@ int main() {
         vector<int> puntaje = {100,110,120,130}; // h1..h4
         map<int,int> m = repes(todas_cartas);
         int n = 3, k = 4;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // Podemos dar a cada jugador las 4 cartas de su favorito -> h4 = 130
         // total = 3 * 130 = 390
         cout << "Ejemplo 3 (corregido) -> expected 390, obtenido " << res << endl;
@@ -153,7 +175,8 @@ int main() {
         vector<int> puntaje = {5,15,40,80}; // h1..h4
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 4;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // Cada jugador recibe 4 veces su favorito -> h4 = 80 -> total = 160
         cout << "Extra 1 -> expected 160, obtenido " << res << endl;
     }
@@ -168,7 +191,8 @@ int main() {
         vector<int> puntaje = {5,10,20,30}; // h1..h4
         map<int,int> m = repes(todas_cartas);
         int n = 1, k = 4;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // Ninguna carta coincide -> total = 0
         cout << "Extra 2 -> expected 0, obtenido " << res << endl;
     }
@@ -183,7 +207,8 @@ int main() {
         vector<int> puntaje = {10}; // h1=10
         map<int,int> m = repes(todas_cartas);
         int n = 3, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // Cada jugador recibe exactamente 1 de su favorito -> 3 * 10 = 30
         cout << "Extra 3 -> expected 30, obtenido " << res << endl;
     }
@@ -199,7 +224,8 @@ int main() {
         vector<int> puntaje = {12}; // h1=12
         map<int,int> m = repes(todas_cartas);
         int n = 1, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 1 -> expected 12, obtenido " << res << endl;
     }
 
@@ -210,7 +236,8 @@ int main() {
         vector<int> puntaje = {9}; // h1=9
         map<int,int> m = repes(todas_cartas);
         int n = 1, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 2 -> expected 0, obtenido " << res << endl;
     }
 
@@ -221,7 +248,8 @@ int main() {
         vector<int> puntaje = {11}; // h1=11
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 3 -> expected 22, obtenido " << res << endl;
     }
 
@@ -232,7 +260,8 @@ int main() {
         vector<int> puntaje = {13}; // h1=13
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 4 -> expected 13, obtenido " << res << endl;
     }
 
@@ -243,7 +272,8 @@ int main() {
         vector<int> puntaje = {6,17}; // h1=6, h2=17
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // cada uno recibe sus 2 favoritas -> 17 + 17 = 34
         cout << "Test 5 -> expected 34, obtenido " << res << endl;
     }
@@ -255,7 +285,8 @@ int main() {
         vector<int> puntaje = {5,14,33}; // h1=5, h2=14, h3=33
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 3;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // cada jugador puede conseguir 2 favoritas -> h2=14 + h2=14 = 28
         cout << "Test 6 -> expected 28, obtenido " << res << endl;
     }
@@ -268,7 +299,8 @@ int main() {
 
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         // cada jugador puede conseguir 2 favoritas -> h2=14 + h2=14 = 28
         cout << "Test 7 -> expected 35, obtenido " << res << endl;
     }
@@ -281,7 +313,8 @@ int main() {
 
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 5;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 8 -> expected 210, obtenido " << res << endl;
     }
 
@@ -292,7 +325,8 @@ int main() {
 
         map<int,int> m = repes(todas_cartas);
         int n = 2, k = 5;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 9 -> expected 208, obtenido " << res << endl;
     }
 
@@ -303,7 +337,8 @@ int main() {
 
         map<int,int> m = repes(todas_cartas);
         int n = 0, k = 0;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 10 -> expected 0, obtenido " << res << endl;
     }
 
@@ -317,7 +352,8 @@ int main() {
         vector<int> puntaje = {10, 15}; 
         map<int,int> m = repes(todas_cartas);
         int n = 3, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
+        vector<vector<int>> memo(n+1, vector<int>(k+1, -1));
+        int res = cartas(n, k, m, favoritas, puntaje, 0, 0, memo);
         cout << "Test 11 -> expected 35, obtenido " << res << endl;
     }
 
@@ -325,3 +361,4 @@ int main() {
 
     return 0;
 }
+*/
