@@ -26,23 +26,14 @@ Si es imposible invertir algunas (posiblemente 0) de las strings para que queden
 En caso contrario, imprimir la mínima cantidad de energía que Juan necesita gastar para lograr su objetivo.
 */
 
-bool ordenados(vector<string>& palabras){
-    for (int i = 0; i < palabras.size() - 1; i++) {
-        if ( palabras[i] > palabras[i + 1]){
-            return false;
-        } 
-    }
-    return true;
-}
 
-int alfabetico(int i, const vector<int>& c, const vector<string>& palabras, vector<string>& palabras_ordenadas) {
-    if (i == (int)palabras.size()) {
-        if (ordenados(palabras_ordenadas)){
-            return 0;
-        }
-        else{
-            return INT_MAX;
-        }
+long long alfabetico(int i, const vector<int>& c, const vector<string>& palabras, vector<string>& palabras_ordenadas, int eleccion, vector<vector<int>>& memo) {
+    if (i == palabras.size()) {
+        return 0;
+    }
+
+    if (memo[i][eleccion] != -1){
+        return memo[i][eleccion];
     }
 
     int min_costo = INT_MAX;
@@ -59,7 +50,7 @@ int alfabetico(int i, const vector<int>& c, const vector<string>& palabras, vect
         palabras_ordenadas.push_back(actual);
 
         // calculo el costo desde acá hasta el futuro
-        int costo = alfabetico(i+1, c, palabras, palabras_ordenadas);
+        int costo = alfabetico(i+1, c, palabras, palabras_ordenadas, 0, memo);
         if (costo != INT_MAX){
             min_costo = min(min_costo, costo);
         }
@@ -80,31 +71,34 @@ int alfabetico(int i, const vector<int>& c, const vector<string>& palabras, vect
         palabras_ordenadas.push_back(reversa_mami);
 
         // calculo el costo desde acá ahsta el futuro y mas alla
-        int costo = alfabetico(i + 1, c, palabras, palabras_ordenadas);
+        int costo = alfabetico(i + 1, c, palabras, palabras_ordenadas, 1, memo);
         if (costo != INT_MAX) {
             min_costo = min(min_costo, c[i] + costo);
         }
         palabras_ordenadas.pop_back();  
     }
 
-    return min_costo;
+    memo[i][eleccion] = min_costo;
+    return memo[i][eleccion];
 }
 
 
-int gasto_alfabetico(vector<int>& c, vector<string>& palabras) {
+long long gasto_alfabetico(vector<int>& c, vector<string>& palabras) {
     vector<string> palabras_ordenadas;
-    int res = alfabetico(0, c, palabras, palabras_ordenadas);
+    vector<vector<int>> memo(palabras.size(), vector<int>(2, -1));
+    int res = alfabetico(0, c, palabras, palabras_ordenadas, 0, memo);
     
     if (res == INT_MAX){
         return -1;
     }
     return res;
 }
-
+/*
 int main(){
     int n;
     cin >> n;
     vector<int> c(n);
+    vector<vector<int>> memo(n, vector<int>(n, -1));
     for (int i = 0; i < n; ++i) {
         cin >> c[i];
     }
@@ -115,7 +109,7 @@ int main(){
     cout << gasto_alfabetico(c, palabras) << endl;
     return 0;
 }
-/*
+*/
 int main() {
     // Test sample 1: Ya ordenado
     {

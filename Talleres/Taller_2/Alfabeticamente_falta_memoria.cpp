@@ -36,13 +36,17 @@ bool ordenados(vector<string>& palabras){
 }
 
 int alfabetico(int i, const vector<int>& c, const vector<string>& palabras, vector<string>& palabras_ordenadas) {
-    if (i == (int)palabras.size()) {
+    if (i == palabras.size()) {
         if (ordenados(palabras_ordenadas)){
             return 0;
         }
         else{
             return INT_MAX;
         }
+    }
+
+    if (memo[i][n] != -1){
+        return memo[n][n];
     }
 
     int min_costo = INT_MAX;
