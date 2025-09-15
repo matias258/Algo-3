@@ -26,79 +26,76 @@ Si es imposible invertir algunas (posiblemente 0) de las strings para que queden
 En caso contrario, imprimir la mínima cantidad de energía que Juan necesita gastar para lograr su objetivo.
 */
 
+long long alfabetico(vector<long long>& c, vector<string>& palabras, 
+                    vector<string>& palabras_revez) {
+    if (palabras.size() == 0) return 0;
 
-long long alfabetico(int i, const vector<long long>& c, const vector<string>& palabras, string palabras_ordenadas, vector<string>& palabras_revez, int eleccion, vector<vector<long long>>& memo) {
-    if (i == palabras.size()) {
-        return 0;
-    }
+    // Memo: memo[i][eleccion] = costo mínimo para primeros i strings, con string anterior en estado eleccion
+    vector<vector<long long>> memo(palabras.size() + 1, vector<long long>(2, INT_MAX));
+    memo[0][0] = 0;  // Dummy inicial (no hay string anterior)
 
-    if (memo[i][eleccion] != -1){
-        return memo[i][eleccion];
-    }
+    // Iterar sobre i (progreso)
+    for (int i = 0; i < palabras.size(); i++) {
 
-    long long min_costo = 1000000;
+        // Caso 1: no modifico la palabra, eleccion = 0 (string anterior es original)
+        if (memo[i][0] != INT_MAX) {
+            string palabras_ordenadas;
+            if (i > 0) {
+                palabras_ordenadas = palabras[i-1];  // Original anterior
+            }  // Para i=0, no se usa (vacío)
 
+            // Subcaso 1: Usar original actual (curr_state=0, costo=0)
+            string actual = palabras[i];
+            if (i == 0 || palabras_ordenadas <= actual) {
+                memo[i+1][0] = min(memo[i+1][0], memo[i][0] + 0);
+            }
 
-    string actual = palabras[i];  
-    string guardo_anterior = palabras_ordenadas;
-    // Caso 1: Usamos la actual, es decir no la vamos a dar vuelta. Costo = 0
-    // Si i == 0, ta todo bien.
-    // Si no, me fijo si la palabra anterior es mas chica, si no lo es saltamos
-    if (i == 0 || palabras_ordenadas <= actual){   
-        
-        // guardo la palabra
-        palabras_ordenadas = actual;
-
-        // calculo el costo desde acá hasta el futuro
-        long long costo = alfabetico(i+1, c, palabras, palabras_ordenadas, palabras_revez, 0, memo);
-        if (costo != 1000000){
-            min_costo = min(min_costo, costo);
+            // Subcaso 2: Usar invertida actual (curr_state=1, costo=c[i])
+            actual = palabras_revez[i];
+            if (i == 0 || palabras_ordenadas <= actual) {
+                memo[i+1][1] = min(memo[i+1][1], memo[i][0] + c[i]);
+            }
         }
 
-        palabras_ordenadas = guardo_anterior;
+        // Caso 2: eleccion_previa = 1 (string anterior es invertido)
+        if (memo[i][1] != LLONG_MAX / 2) {
+            string palabras_ordenadas;
+            if (i > 0) {
+                palabras_ordenadas = palabras_revez[i-1];  // Invertido anterior
+            }  // Para i=0, no se usa (vacío)
+
+            // Subcaso 1: Usar original actual (curr_state=0, costo=0)
+            string actual = palabras[i];
+            if (i == 0 || palabras_ordenadas <= actual) {
+                memo[i+1][0] = min(memo[i+1][0], memo[i][1] + 0);
+            }
+
+            // Subcaso 2: Usar invertida actual (curr_state=1, costo=c[i])
+            actual = palabras_revez[i];
+            if (i == 0 || palabras_ordenadas <= actual) {
+                memo[i+1][1] = min(memo[i+1][1], memo[i][1] + c[i]);
+            }
+        }
     }
 
-    // Caso 2: Usamos la actual pero dada vuelta. Costo = C[i]
-    // Si i == 0, ta todo bien.
-    // Si no, me fijo si la palabra anterior es mas chica, si no lo es saltamos
-    if (i == 0 || palabras_ordenadas <= palabras_revez[i]) {
-
-        // guardo la palabra
-        palabras_ordenadas = palabras_revez[i];
-
-        // calculo el costo desde acá ahsta el futuro y mas alla
-        long long costo = alfabetico(i + 1, c, palabras, palabras_ordenadas, palabras_revez, 1, memo);
-        if (costo != 1000000) {
-            min_costo = min(min_costo, c[i] + costo);
-        } 
-
-        palabras_ordenadas = guardo_anterior;
-    }
-
-    memo[i][eleccion] = min_costo;
-    return memo[i][eleccion];
+    long long min_costo = min(memo[palabras.size()][0], memo[palabras.size()][1]);
+    return (min_costo == INT_MAX ? -1 : min_costo);
 }
 
-
-long long gasto_alfabetico(vector<long long>& c, vector<string>& palabras) {
+long long gasto_alfabetico(vector<long long> c, vector<string>& palabras) {
     vector<string> palabras_revez = palabras;
-    for (int i = 0; i < palabras.size(); i++){
+    for (int i = 0; i < palabras.size(); i++) {
         reverse(palabras_revez[i].begin(), palabras_revez[i].end());
     }
-    vector<vector<long long>> memo(palabras.size(), vector<long long>(2, -1));
-    int res = alfabetico(0, c, palabras, palabras[0], palabras_revez, 0, memo);
-    
-    if (res == 1000000){
-        return -1;
-    }
-    return res;
+    return alfabetico(c, palabras, palabras_revez);
 }
 
 
+/*
 int main(){
     int n;
     cin >> n;
-    vector<long long> c(n);
+    vector<int> c(n);
     vector<vector<int>> memo(n, vector<int>(n, -1));
     for (int i = 0; i < n; i++) {
         cin >> c[i];
@@ -110,8 +107,8 @@ int main(){
     cout << gasto_alfabetico(c, palabras) << endl;
     return 0;
 }
+*/
 
-/*
 
 
 int main() {
@@ -129,8 +126,8 @@ int main() {
         int n = 3;
         vector<long long> c = {100, 200, 300};
         vector<string> palabras = {"za", "yb", "xc"};
-        long long res = gasto_alfabetico(c, palabras);
-        cout << "Sample 2 -> expected 300, obtenido " << res << endl;  // 100
+        long long res = gasto_alfabetico(c, palabras);  // Da 300
+        cout << "Sample 2 -> expected 300, obtenido " << res << endl;  // 0
     }
 
     // Test sample 3: Imposible
@@ -180,4 +177,3 @@ int main() {
     return 0;
 }
 
-*/
