@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <cstdio>
 #include <algorithm>
+#include <bits/stdc++.h>
 using namespace std;
 
 /*
@@ -39,130 +40,96 @@ Output:
 6
 */
 
-string comprimir_string(string s){
-    int repetidos;
-    string res;
-    for (int i = 0; i < s.size(); i++){
-        int j = i;
-        while (s[j] == s[j+1]){
-            repetidos++;
-            j++;
-        }
-        i = j;
-        res += s[i];
-    }
-    return res;
-}
-
-
-int funcion(int n, string& s, unordered_map<string, int>& memo ){
-    // Caso base: eliminé todo el string o me quedó 1 solo
-    if (s.size() == 0){
+int funcion(int left, int right, vector<vector<int>>& memo, string& s){
+    if (left > right)
         return 0;
-    }
-    if (s.size() == 1){
+    if (left == right)
         return 1;
-    }
+    if (memo[left][right] != 601) 
+        return memo[left][right];
 
-    if (memo.count(s) == true) {    // si la clave existe en memo
-        return memo[s];
-    }
+    // Eliminamos solo un char
+    int res = 1 + funcion(left + 1, right, memo, s);
 
-    int res = INT_MAX / 2;  // lo unico que faltaria es que hiciera overflow la pm
-
-    for (int i = 0; i < s.size(); i++) {
-        string left = s.substr(0, i);
-        string right = s.substr(i + 1, s.size());
-
-        // Nuevo string sin el que acabo de eliminar (osea s[i])
-        string nuevo_string = left + right;
-        int costo_agregado = 0; // suma extra por si fin de left e inicio de right comparten misma letra.
-
-        // Si left y right no estan vacios
-        // Y si el final de left == inicio de right, (por ejemplo "ab", "bc" -> "abbc")
-        // busco eliminar esos 2
-        if (!left.empty() && !right.empty() && left.back() == right[0]) {
-            nuevo_string = left.substr(0, left.size() - 1) + right.substr(1);
-            costo_agregado ++;
+    // are deleted if any of them matches
+    // Si hay algunos vecinos que matchean "abcbc", saco c -> "abbc" (los b matchean)
+    // Los eliminamos
+    for (int i = left + 1; i <= right; i++) {
+        if (s[left] == s[i]){
+            int saco_left = funcion(left + 1, i - 1, memo, s);
+            int sigo = funcion(i, right, memo, s);
+            res = min(res, saco_left + sigo);
         }
-
-        nuevo_string = comprimir_string(nuevo_string);
-
-        int costo = 1 + costo_agregado + funcion(n, nuevo_string, memo);
-
-        res = min(res, costo);
+            
     }
-
-    memo[s] = res;
-    return res;
+    return memo[left][right] = res;
 }
 
-
-/*
-// capaz utilizar un dicc como memo? con por ej key = "acbc", value = 3 (min costo)
 int main(){
     int n;
-    string a;
-    unordered_map<string, int> memo;  
     cin >> n;
-    cin >> a;
 
-    a = comprimir_string(a);
-    int res = funcion(n, a, memo);
-
+    string s;
+    cin >> s;
+    // Como n <= 600, lo max q puede valer algo es 600
+    // Y seguro menos porque hay 26 letras (creo?) en el abecedario. Luego es congruente con 26
+    vector<vector<int>> memo(n, vector<int>(n, 601));
+    int res = funcion(0, n-1, memo, s);
     cout << res;
     return 0;
 }
-*/
-
+/*
 int main() {
     // Vector de casos de prueba: {input string, valor esperado}
-    unordered_map<string, int> memo;  
     vector<pair<string, int>> casos = {
+        {"abbcba", 3},
+        {"abzfondob", 7},
         {"aaabbb", 2},
         {"abccabccab", 6},
-        {"a", 1},             // Comprimido: "a" → 1 operación (caso mínimo n=1)
-        {"aa", 1},            // Comprimido: "a" → 1 operación (todo igual)
-        {"ab", 2},            // Comprimido: "ab" → 2 operaciones (diferentes, no merge)
-        {"aba", 2},           // Comprimido: "aba" → 2 operaciones (merge posible)
-        {"abab", 3},          // Comprimido: "abab" → 3 operaciones (alternante, rama profunda)
-        {"ababab", 4},        // Comprimido: "ababab" → 4 operaciones (alternante más largo)
-        {"abcba", 3},         // Comprimido: "abcba" → 3 operaciones (palíndromo con merges en cascada)
-        {"aaddaa", 2},        // Comprimido: "ada" → 2 operaciones (merges con chars diferentes)
-        {"abccabccab", 6},    // Comprimido: "abcabcab" → 6 operaciones (ejemplo del problema)
-        {"abbbccbbba", 3},    // Comprimido: "abcba" → 3 operaciones (como explicaste, con merges eficientes)
+        {"a", 1},
+        {"aa", 1},
+        {"ab", 2},
+        {"aba", 2},
+        {"abab", 3},
+        {"ababab", 4},
+        {"abcba", 3},
+        {"aaddaa", 2},
+        {"abccabccab", 6},
+        {"abbbccbbba", 3},
         {"abc", 3},
         {"ababa", 3},
         {"acbdefgh", 8},
-        {"abba", 2},             // comprime a "aba" -> 2 operaciones (borrar 'b' luego 'aa')
-        {"aabaa", 2},            // comprime a "aba" -> 2 operaciones
-        {"aaaaabaaaaa", 2},      // borrar 'b' -> todas las 'a' se juntan -> 2 operaciones
-        {"ababa", 3},            // patrón con múltiples 'a' separadas -> 3 operaciones
-        {"zzzyzz", 2},           // 'zzz','y','zz' -> borrar 'y' juntea los z -> 2 operaciones
-        {"aaabbbcccaaa", 3},     // mezcla de runs que permite merges intermedios
+        {"abba", 2},
+        {"aabaa", 2},
+        {"aaaaabaaaaa", 2},
+        {"ababa", 3},
+        {"zzzyzz", 2},
+        {"aaabbbcccaaa", 3},
         {"abacaba", 4},
         {"babab", 3},
         {"abzfondob", 7},
-        {"aaaaaaaaaaaaaaaaaaaaaaaaaaaa", 1},  // 28 'a' → debería dar 1 (bloque entero)
-        {"abababababababababababababab", 15}, // alternancia larga (30 letras)
-        {"abcabcabcabcabcabcabcabcabc", 18},  // repetición de 'abc' muchas veces
-        {"abbaabbaabbaabbaabbaabbaabba", 8},  // repeticiones de 'abba'
+        {"aaaaaaaaaaaaaaaaaaaaaaaaaaaa", 1},
+        {"abababababababababababababab", 15},
+        {"abbaabbaabbaabbaabbaabbaabba", 8},
         {"rnjgjsqjbmc", 9},
-        {"npyzmqytjq", 9}
-
+        {"npyzmqytjq", 9},
+        {"rnsqjbmc", 8}
     };
 
     // Iterar sobre los casos de prueba
-    for (int i = 0; i < casos.size(); i++) {
+    for (size_t i = 0; i < casos.size(); i++) {
         string a = casos[i].first;
         int expected = casos[i].second;
         // Comprimir el string
-        string b = comprimir_string(a);
-        // Calcular resultado (nota: ajusta a funcion(b) si quitaste 'n' en la firma)
-        int res = funcion(a.size(), b, memo);  // Usa n = a.size() como en tu código
+        int n = a.size(); // Use compressed string length
+        vector<vector<int>> memo(n, vector<int>(n, 601)); // Initialize with -1
+        // Calcular resultado
+        int res = funcion(0, n - 1, memo, a); // Use compressed string
         // Imprimir resultado con valor esperado
-        cout << "a = \"" << a.substr(0, 20) << (a.size() > 20 ? "..." : "") << "\", esperado = " << expected << ", obtenido = " << res << endl;
+        cout << "a = \"" << a.substr(0, 20) << (a.size() > 20 ? "..." : "") 
+             << "\", esperado = " << expected << ", obtenido = " << res << endl;
     }
 
     return 0;
 }
+    */
