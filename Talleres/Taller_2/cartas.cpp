@@ -34,45 +34,116 @@ using namespace std;
    Imprime un único entero, la máxima alegría total posible.
    ------------------------------------------------------------------------------ */
 
+vector<int> merge (vector<int>& izq, vector<int>& der){
+    vector<int> mergeados;
+    int i, j = 0;
+
+    while (i < izq.size() && j < der.size()){
+        if (izq[i] < der[j]){
+            mergeados.push_back(izq[i]);
+            i++;
+        }
+        else {
+            mergeados.push_back(der[j]);
+            j++; 
+        }
+        
+    }
+    for (int k = i; k < izq.size(); k++){
+        mergeados.push_back(izq[k]);
+    }
+    for (int l = j; l < der.size(); l++){
+        mergeados.push_back(der[l]);
+    }
+    return mergeados;
+}
+
+
+vector<int> merge_sort(vector<int>& arr){
+    if (arr.size() <= 1){
+        return arr;
+    }
+    int medio = arr.size() / 2;                   // Divide
+    vector<int>mitad_izq;
+    vector<int>mitad_der; 
+    for (int k = 0; k < medio; k++){
+        mitad_izq.push_back(arr[k]);
+    }
+    for (int k = medio; k < arr.size(); k++){
+        mitad_der.push_back(arr[k]);
+    }
+    mitad_izq = merge_sort(mitad_izq);            // Conquer
+    mitad_der = merge_sort(mitad_der);            // Conquer
+
+    return merge(mitad_izq, mitad_der);           // Combine
+}  
 
 
 int cartas(vector<int>& c, vector<int>& f, vector<int>& h, int i, int j, int r){
-    if (i == c.size()){
+    if (j == f.size() || i == c.size()){
         return 0;
     }
 
-    int dar_alegria_macarena = 0;
-    int seguir = 0;
+    int sumar_carta = 0;
+    int siguiente_jugador = 0;
+    int pasar_carta = 0;
 
-    // La carta no es la favorita del jugador actual
-    if (c[i] != f[j]){
-        // paso a la siguiente carta
-        return cartas(c, f, h, i+1, j, 0);
-    }
-    if (r < h.size()){
+    if (f[j] == c[i] && r < h.size()){
         if (r == 0){
-            dar_alegria_macarena = h[r] + cartas(c, f, h, i+1, j, r+1);
+            sumar_carta =  h[r] + cartas(c, f, h, i+1, j, r+1);
         }
         else{
-            dar_alegria_macarena = h[r] - h[r-1] + cartas(c, f, h, i+1, j, r+1);
+            sumar_carta = h[r] - h[r-1] + cartas(c, f, h, i+1, j, r+1);
         }
+        
     }
-     
+
+    pasar_carta = cartas(c, f, h, i+1, j, r);
+    siguiente_jugador = cartas(c, f, h, i, j+1, 0);
     
-    seguir = cartas(c, f, h, i, j+1, 0); 
-    int res = max(dar_alegria_macarena, seguir);
+    int res = max(sumar_carta, max(pasar_carta, siguiente_jugador));
 
     return res;
 }
 
+/*
+int main(){
+    int n, k;
+    cin >> n >> k;
+    vector<int> c(n * k);
+    for (int i = 0; i < n * k; i++) {
+        cin >> c[i];
+    }
+    vector<int> f(n);
+    for (int i = 0; i < n; i++) {
+        cin >> f[i];
+    }
+    vector<int> h(k);
+    for (int i = 0; i < k; i++) {
+        cin >> h[i];
+    }
+
+    cout << cartas(n, k, c, f, h, 0, 0, 0) << endl;
+    return 0;
+}
+*/
+
 int main() {
     // Prueba 1: Caso de ejemplo 1 del PDF
+    {
+        int n = 3, k = 2;
+        vector<int> c = {1, 2, 3, 1, 2, 3};
+        vector<int> f = {1, 2, 3};
+        vector<int> h = {10, 20};
+        cout << "Prueba 1 (Ejemplo 1): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 60" << endl;
+    }
+
     {
         int n = 5, k = 5;
         vector<int> c = {1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5};
         vector<int> f = {1, 2, 3, 4, 5};
         vector<int> h = {10, 20, 30, 40, 50};
-        cout << "Prueba 1 (Ejemplo 1): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 250" << endl;
+        cout << "Prueba 1.bis (Ejemplo 1): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 250" << endl;
     }
 
     // Prueba 2: Caso de ejemplo 2 del PDF
@@ -110,30 +181,18 @@ int main() {
         vector<int> h = {10, 20};
         cout << "Prueba 5: " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 30" << endl;
     }
+
+    // Prueba 6:
+    {
+        int n = 2, k = 2;
+        vector<int> c = {1, 1, 2, 2};
+        vector<int> f = {1, 2};
+        vector<int> h = {10, 20};
+        cout << "Prueba 6: " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 40" << endl;
+    }
 }
 
 
 
 
 
-/*
-int main(){
-    int n, k;
-    cin >> n >> k;
-    vector<int> c(n * k);
-    for (int i = 0; i < n * k; i++) {
-        cin >> c[i];
-    }
-    vector<int> f(n);
-    for (int i = 0; i < n; i++) {
-        cin >> f[i];
-    }
-    vector<int> h(k);
-    for (int i = 0; i < k; i++) {
-        cin >> h[i];
-    }
-
-    cout << cartas(n, k, c, f, h, 0, 0, 0) << endl;
-    return 0;
-}
-*/

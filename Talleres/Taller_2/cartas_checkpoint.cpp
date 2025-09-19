@@ -7,321 +7,195 @@
 #include <unordered_map>
 #include <cstdio>
 #include <algorithm>
+#include <bits/stdc++.h>
 using namespace std;
 
-/*
-Hay n * k cartas, hay k puntajes y n favoritas. puntajes es creciente.
-*/
+/* ------------------------------------------------------------------------------
+   C. Cartas
 
+   Hay n jugadores jugando a las cartas. El jugador j tiene un número favorito f_j.
+   Hay k cartas en la mesa. La carta i contiene un entero c_i.
+   Los jugadores deben distribuir las cartas entre sí, dando k cartas a cada jugador. Finalmente, cada jugador cuenta cuántas cartas
+   recibió con su número favorito escrito en ellas. Un jugador j que recibió t cartas con su número favorito f_j, tiene una alegría de h_j = t.
+   h_0 = 0.
 
-// Me construyo un map con key: numeros de las cartas; values: repeticiones de esos numeros
-map<int, int> repes(vector<int> cartas){
-    map<int, int> m = {};
+   Indica la máxima suma posible de las alegrías de los jugadores si se distribuyen las cartas de forma óptima. Notar que los enteros h_j son
+   los mismos para todos los jugadores.
 
-    for (size_t i = 0; i < cartas.size(); i++){
-        if (m.find(cartas[i]) == m.end()) {
-            m[cartas[i]] = 1;
-        } else {
-            m[cartas[i]]++;
+   Input
+   La primera línea contiene 2 enteros n y k (1 ≤ n ≤ 500, 1 ≤ k ≤ 10). El número de jugadores y la cantidad de cartas que cada jugador va a recibir.
+   La segunda línea contiene los n enteros c_j (1 ≤ c_j ≤ 10^9)
+   La tercera línea contiene los n enteros f_j (1 ≤ f_j ≤ 10^9)
+   La cuarta línea contiene los k enteros h_1, ..., h_k (1 ≤ h_i ≤ 10^9). Se garantiza que h_{t-1} < h_t para 2 ≤ t ≤ k.
+
+   Pista: Piensen el caso donde todos los jugadores tienen el mismo número favorito.
+
+   Output
+   Imprime un único entero, la máxima alegría total posible.
+   ------------------------------------------------------------------------------ */
+
+vector<int> merge (vector<int>& izq, vector<int>& der){
+    vector<int> mergeados;
+    int i, j = 0;
+
+    while (i < izq.size() && j < der.size()){
+        if (izq[i] < der[j]){
+            mergeados.push_back(izq[i]);
+            i++;
         }
+        else {
+            mergeados.push_back(der[j]);
+            j++; 
+        }
+        
     }
-    return m;
+    for (int k = i; k < izq.size(); k++){
+        mergeados.push_back(izq[k]);
+    }
+    for (int l = j; l < der.size(); l++){
+        mergeados.push_back(der[l]);
+    }
+    return mergeados;
 }
 
-int cartas(int n, int k, map<int, int> m, vector<int>& favoritas, vector<int>& puntaje, size_t it, size_t i){
-    if (it == favoritas.size()){
+
+vector<int> merge_sort(vector<int>& arr){
+    if (arr.size() <= 1){
+        return arr;
+    }
+    int medio = arr.size() / 2;                   // Divide
+    vector<int>mitad_izq;
+    vector<int>mitad_der; 
+    for (int k = 0; k < medio; k++){
+        mitad_izq.push_back(arr[k]);
+    }
+    for (int k = medio; k < arr.size(); k++){
+        mitad_der.push_back(arr[k]);
+    }
+    mitad_izq = merge_sort(mitad_izq);            // Conquer
+    mitad_der = merge_sort(mitad_der);            // Conquer
+
+    return merge(mitad_izq, mitad_der);           // Combine
+}  
+
+
+int cartas(vector<int>& c, vector<int>& f, vector<int>& h, int i, int j, int r){
+    if (j == f.size() || i == c.size()){
         return 0;
     }
-    int puntos = 0;
 
-    // Si:  Encuentro la carta en el dict y
-    //      la carta tiene valores disponibles y
-    //      puedo seguir sumando puntos
-    if (m.find(favoritas[it]) != m.end() && m[favoritas[it]] > 0 && i < puntaje.size()){
+    int sumar_carta = 0;
+    int siguiente_jugador = 0;
+    int pasar_carta = 0;
 
-        m[favoritas[it]] = m[favoritas[it]] - 1; // elimino la que voy a agregar
+    
 
-        // sigo con el mismo jugador
-        int puntos_seguir = cartas(n, k, m, favoritas, puntaje, it, i+1);
-
-        // pasar directamente al prox jugador
-        int puntos_pasar = puntaje[i] + cartas(n, k, m, favoritas, puntaje, it + 1, 0);  
-
-        // Tomo el resultado
-        puntos = max(puntos_seguir, puntos_pasar);
-
-        m[favoritas[it]]++;
+    if (f[j] == c[i] && r < h.size()){
+        if (r == 0){
+            sumar_carta =  h[r] + cartas(c, f, h, i+1, j, r+1);
+        }
+        else{
+            sumar_carta = h[r] - h[r-1] + cartas(c, f, h, i+1, j, r+1);
+        }
+        
     }
-    // Si no encuentro la carta en el dict (no tengo cartas favs para el jugador) o
-    // Si no puedo seguir sumando puntos
-    // --> Cambio de jugador
-    puntos = max(puntos, cartas(n, k, m, favoritas, puntaje, it + 1, 0));
+    
+    pasar_carta = cartas(c, f, h, i + 1, j, r);
 
-    return puntos;
+    siguiente_jugador = cartas(c, f, h, i, j + 1, 0);
+    
+    int res = max(sumar_carta, max(pasar_carta, siguiente_jugador));
+
+    return res;
 }
 
 /*
-int main() {
-    int n;
-    int k;
+int main(){
+    int n, k;
     cin >> n >> k;
-    
-    vector<int> todas_cartas;
+    vector<int> c(n * k);
     for (int i = 0; i < n * k; i++) {
-        int carta;
-        cin >> carta;
-        todas_cartas.push_back(carta);
+        cin >> c[i];
     }
-
-    vector<int> favoritas;
+    vector<int> f(n);
     for (int i = 0; i < n; i++) {
-        int fav;
-        cin >> fav;
-        favoritas.push_back(fav);
+        cin >> f[i];
     }
-
-    vector<int> puntaje;
+    vector<int> h(k);
     for (int i = 0; i < k; i++) {
-        int p;
-        cin >> p;
-        puntaje.push_back(p);
+        cin >> h[i];
     }
 
-    map<int, int> m = repes(todas_cartas);
-
-    int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-    cout << res;
+    cout << cartas(n, k, c, f, h, 0, 0, 0) << endl;
     return 0;
 }
 */
 
 int main() {
-
+    // Prueba 1: Caso de ejemplo 1 del PDF
     {
-        vector<int> todas_cartas = {1,1,2,2}; // 4 cartas
-        vector<int> favoritas = {1,1};        // 2 jugadores
-        vector<int> puntaje = {10,20};        // h1=10, h2=20
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // Mejor reparto: un jugador recibe las dos '1' -> h2=20, otro h0=0 -> total 20
-        cout << "Ejemplo 2 -> expected 20, obtenido " << res << endl;
-    }
-    
-    // ======================
-    // Ejemplo 1 (original)
-    // ======================
-    {
-        vector<int> todas_cartas = {
-            1,2,3,4,5, 1,2,3,4,5, 1,2,3,4,5, 1,2,3,4,5, 1,2,3,4,5
-        }; // 25 cartas
-        vector<int> favoritas = {1,2,3,4,5};
-        vector<int> puntaje = {10,20,30,40,50}; // h1..h5 (h1 != 0)
-        map<int,int> m = repes(todas_cartas);
-        int n = 5, k = 5;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // cada jugador recibe 5 de su favorito -> h5 = 50 -> total = 5 * 50 = 250
-        cout << "Ejemplo 1 -> expected 250, obtenido " << res << endl;
-    }
-
-
-    // ======================
-    // Ejemplo 3 (CORREGIDO: n=3, k=4 -> 12 cartas)
-    // ======================
-    {
-        vector<int> todas_cartas;
-        for (int i = 0; i < 4; ++i) { todas_cartas.push_back(1); }
-        for (int i = 0; i < 4; ++i) { todas_cartas.push_back(2); }
-        for (int i = 0; i < 4; ++i) { todas_cartas.push_back(3); }
-        vector<int> favoritas = {1,2,3};
-        vector<int> puntaje = {100,110,120,130}; // h1..h4
-        map<int,int> m = repes(todas_cartas);
-        int n = 3, k = 4;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // Podemos dar a cada jugador las 4 cartas de su favorito -> h4 = 130
-        // total = 3 * 130 = 390
-        cout << "Ejemplo 3 (corregido) -> expected 390, obtenido " << res << endl;
-    }
-
-    // ======================
-    // Extra 1: todos los jugadores mismo favorito
-    // n=2, k=4 -> 8 cartas
-    // ======================
-    {
-        vector<int> todas_cartas = {5,5,5,5, 5,5,5,5}; // 8 cartas (todas '5')
-        vector<int> favoritas = {5,5};
-        vector<int> puntaje = {5,15,40,80}; // h1..h4
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 4;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // Cada jugador recibe 4 veces su favorito -> h4 = 80 -> total = 160
-        cout << "Extra 1 -> expected 160, obtenido " << res << endl;
-    }
-
-    // ======================
-    // Extra 2: no hay coincidencias con favoritos
-    // n=1, k=4 -> todas cartas '7', favorito distinto
-    // ======================
-    {
-        vector<int> todas_cartas = {7,7,7,7};
-        vector<int> favoritas = {1};
-        vector<int> puntaje = {5,10,20,30}; // h1..h4
-        map<int,int> m = repes(todas_cartas);
-        int n = 1, k = 4;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // Ninguna carta coincide -> total = 0
-        cout << "Extra 2 -> expected 0, obtenido " << res << endl;
-    }
-
-    // ======================
-    // Extra 3: k=1, favoritos distintos
-    // n=3, k=1 -> 3 cartas
-    // ======================
-    {
-        vector<int> todas_cartas = {1,2,3};
-        vector<int> favoritas = {1,2,3};
-        vector<int> puntaje = {10}; // h1=10
-        map<int,int> m = repes(todas_cartas);
-        int n = 3, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // Cada jugador recibe exactamente 1 de su favorito -> 3 * 10 = 30
-        cout << "Extra 3 -> expected 30, obtenido " << res << endl;
-    }
-
-    // ======================
-    // Tests adicionales para depuración (casos pequeños y borde)
-    // ======================
-
-    // Test 1: 1 jugador, 1 carta, coincide
-    {
-        vector<int> todas_cartas = {7};
-        vector<int> favoritas = {7};
-        vector<int> puntaje = {12}; // h1=12
-        map<int,int> m = repes(todas_cartas);
-        int n = 1, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 1 -> expected 12, obtenido " << res << endl;
-    }
-
-    // Test 2: 1 jugador, 1 carta, no coincide
-    {
-        vector<int> todas_cartas = {5};
-        vector<int> favoritas = {7};
-        vector<int> puntaje = {9}; // h1=9
-        map<int,int> m = repes(todas_cartas);
-        int n = 1, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 2 -> expected 0, obtenido " << res << endl;
-    }
-
-    // Test 3: 2 jugadores, k=1, favoritos distintos
-    {
-        vector<int> todas_cartas = {1,2};
-        vector<int> favoritas = {1,2};
-        vector<int> puntaje = {11}; // h1=11
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 3 -> expected 22, obtenido " << res << endl;
-    }
-
-    // Test 4: 2 jugadores, k=1, ambos quieren '1' pero hay solo una '1'
-    {
-        vector<int> todas_cartas = {1,9};
-        vector<int> favoritas = {1,1};
-        vector<int> puntaje = {13}; // h1=13
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 1;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 4 -> expected 13, obtenido " << res << endl;
-    }
-
-    // Test 5: 2 jugadores, k=2, favoritos distintos
-    {
-        vector<int> todas_cartas = {1,1,2,2};
-        vector<int> favoritas = {1,2};
-        vector<int> puntaje = {6,17}; // h1=6, h2=17
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // cada uno recibe sus 2 favoritas -> 17 + 17 = 34
-        cout << "Test 5 -> expected 34, obtenido " << res << endl;
-    }
-
-    // Test 6: 2 jugadores, k=3, cartas variadas
-    {
-        vector<int> todas_cartas = {1,1,2,2,3,3}; // 6 cartas
-        vector<int> favoritas = {1,2};
-        vector<int> puntaje = {5,14,33}; // h1=5, h2=14, h3=33
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 3;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // cada jugador puede conseguir 2 favoritas -> h2=14 + h2=14 = 28
-        cout << "Test 6 -> expected 28, obtenido " << res << endl;
-    }
-
-    // Test 7: 
-    {
-        vector<int> todas_cartas = {1,1,1, 5};
-        vector<int> favoritas = {1,1};
-        vector<int> puntaje = {10,25}; // h1=10, h2=25
-
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        // cada jugador puede conseguir 2 favoritas -> h2=14 + h2=14 = 28
-        cout << "Test 7 -> expected 35, obtenido " << res << endl;
-    }
-
-    // Test 8: Ningun favorito
-    {
-        vector<int> todas_cartas = {1,1,1,1,1,1,1,1,1,1}; // 10
-        vector<int> favoritas = {1,1};
-        vector<int> puntaje = {100,101, 102, 103, 105};
-
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 5;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 8 -> expected 210, obtenido " << res << endl;
-    }
-
-    {   // Test 9
-        vector<int> todas_cartas = {1,1,1,1,1,1,1,1,1,1}; // 10
-        vector<int> favoritas = {1,1};
-        vector<int> puntaje = {100,101,102,103,104}; 
-
-        map<int,int> m = repes(todas_cartas);
-        int n = 2, k = 5;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 9 -> expected 208, obtenido " << res << endl;
-    }
-
-    {
-        vector<int> todas_cartas = {};
-        vector<int> favoritas = {};
-        vector<int> puntaje = {}; 
-
-        map<int,int> m = repes(todas_cartas);
-        int n = 0, k = 0;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 10 -> expected 0, obtenido " << res << endl;
-    }
-
-    {
-        // Si le doy los dos 10 al jugador 1, obtengo 15 pts. 
-        // En cambio si doy un 10 al jugador 1 y otro 10 al jugador 3 --> 10 + 10 = 20 > 15 pts
-        // Le agrego los dos de 20 al jugador 2 --> 15pts 
-        // Obtengo 20 + 15 --> 35
-        vector<int> todas_cartas = {10, 10, 20, 20, 99, 98};
-        vector<int> favoritas = {10, 20, 10};
-        vector<int> puntaje = {10, 15}; 
-        map<int,int> m = repes(todas_cartas);
         int n = 3, k = 2;
-        int res = cartas(n, k, m, favoritas, puntaje, 0, 0);
-        cout << "Test 11 -> expected 35, obtenido " << res << endl;
+        vector<int> c = {1, 2, 3, 1, 2, 3};
+        vector<int> f = {1, 2, 3};
+        vector<int> h = {10, 20};
+        cout << "Prueba 1 (Ejemplo 1): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 60" << endl;
     }
 
-    
+    {
+        int n = 5, k = 5;
+        vector<int> c = {1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5};
+        vector<int> f = {1, 2, 3, 4, 5};
+        vector<int> h = {10, 20, 30, 40, 50};
+        cout << "Prueba 1.bis (Ejemplo 1): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 250" << endl;
+    }
 
-    return 0;
+    // Prueba 2: Caso de ejemplo 2 del PDF
+    {
+        int n = 2, k = 2;
+        vector<int> c = {2, 1, 2, 1};
+        vector<int> f = {1, 1};
+        vector<int> h = {10, 20};
+        cout << "Prueba 2 (Ejemplo 2): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 20" << endl;
+    }
+
+    // Prueba 3: Todos los números favoritos son iguales
+    {
+        int n = 3, k = 2;
+        vector<int> c = {1, 1, 1, 1, 1, 1};
+        vector<int> f = {1, 1, 1};
+        vector<int> h = {5, 7};
+        cout << "Prueba 3 (Todos favoritos iguales): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 21" << endl;
+    }
+
+    // Prueba 4: Sin coincidencias
+    {
+        int n = 2, k = 1;
+        vector<int> c = {1, 2, 3, 4};
+        vector<int> f = {5, 6};
+        vector<int> h = {10, 20};
+        cout << "Prueba 4 (Sin coincidencias): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 0" << endl;
+    }
+
+    // Prueba 5:
+    {
+        int n = 2, k = 2;
+        vector<int> c = {1, 2, 2, 2};
+        vector<int> f = {2, 2};
+        vector<int> h = {10, 20};
+        cout << "Prueba 5: " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 30" << endl;
+    }
+
+    // Prueba 6:
+    {
+        int n = 2, k = 2;
+        vector<int> c = {1, 1, 2, 2};
+        vector<int> f = {1, 2};
+        vector<int> h = {10, 20};
+        cout << "Prueba 6: " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 40" << endl;
+    }
 }
+
+
+
+
+
