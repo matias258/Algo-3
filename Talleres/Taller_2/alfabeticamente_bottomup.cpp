@@ -27,70 +27,46 @@ Si es imposible invertir algunas (posiblemente 0) de las strings para que queden
 En caso contrario, imprimir la mínima cantidad de energía que Juan necesita gastar para lograr su objetivo.
 */
 
-long long maximo = 1e18;
-long long alfa(vector<string>& s, vector<string>& reverse_s, vector<long long>& c, long long i, long long estado, vector<vector<long long>>& memo) {
-    // Caso base: ultima palabra
-    if (i == s.size() - 1) {
-        if (estado == 0) {
-            return 0;        // sin invertir
-        } else {
-            return c[i];     // invertida
+long long alfa(vector<string>& s, vector<string>& reverse_s, vector<long long>& c) {
+    long long n = s.size();
+    vector<vector<long long>> memo(n, vector<long long>(2, LLONG_MAX/2));
+
+    // Caso base: primera palabra
+    memo[0][0] = 0;       // sin invertir
+    memo[0][1] = c[0];    // invertida
+
+    // Transición
+    for (long long i = 1; i < n; i++) {
+        // Caso1: No invierto la palabra i, es decir s[i-1] o rev_s[i-1] <= al siguiente
+        if (s[i-1] <= s[i]) {
+            memo[i][0] = min(memo[i][0], memo[i-1][0]);
+        }
+        if (reverse_s[i-1] <= s[i]) {
+            memo[i][0] = min(memo[i][0], memo[i-1][1]);
+        }
+
+        // Caso 2: invierto la palabra i, es decir s[i-1] o rev_s[i-1] <= al rev_s del siguiente
+        if (s[i-1] <= reverse_s[i]) {
+            memo[i][1] = min(memo[i][1], memo[i-1][0] + c[i]);
+        }
+        if (reverse_s[i-1] <= reverse_s[i]) {
+            memo[i][1] = min(memo[i][1], memo[i-1][1] + c[i]);
         }
     }
+    long long res = min(memo[n-1][0], memo[n-1][1]);
 
-    if (s[i] > s[i+1] && reverse_s[i] > s[i+1] && s[i] > reverse_s[i+1] && reverse_s[i] > reverse_s[i+1]){
-        return maximo;
-    }
-
-    if (memo[i][estado] != maximo) {
-        return memo[i][estado];
-    }
-
-    string actual;
-    long long costo;
-
-    if (estado == 0) {
-        actual = s[i];
-        costo = 0;
-    } 
-    else {
-        actual = reverse_s[i];
-        costo = c[i];
-    }
-
-    // Pa que no haga ¡kaboom!
-    long long res = maximo;
-
-    // Caso 1: Puedo seguir --> estado = 0
-    if (actual <= s[i+1]) {
-        res = min(res, costo + alfa(s, reverse_s, c, i+1, 0, memo));
-    }
-
-    // Caso 2: Tengo que dar vuelta la palabra --> estado = 1
-    if (actual <= reverse_s[i+1]) {
-        res = min(res, costo + alfa(s, reverse_s, c, i+1, 1, memo));
-    }
-
-    memo[i][estado] = res;
-
-    return memo[i][estado];
+    return res;
 }
- 
+
 long long alfa_result(vector<string>& s, vector<long long>& c) {
-    vector<string> reverse_s = s; 
-
-    // mejor prevenir que curar 
-    //vector<vector<long long>> memo1(s.size(), vector<long long>(2, LLONG_MAX/2));
-    vector<vector<long long>> memo2(s.size(), vector<long long>(2, maximo));
-
+    vector<string> reverse_s = s;
     for (long long i = 0; i < s.size(); i++) {
         reverse(reverse_s[i].begin(), reverse_s[i].end());
     }
-    
-    // Comienzo con la 1ra palabra como viene y Comienzo con la palabra invertida
-    long long res = min(alfa(s, reverse_s, c, 0, 0, memo2), alfa(s, reverse_s, c, 0, 1, memo2));
- 
-    if (res >= maximo) {
+
+    long long res = alfa(s, reverse_s, c);
+
+    if (res >= LLONG_MAX/2) {
         return -1;
     }
     return res;

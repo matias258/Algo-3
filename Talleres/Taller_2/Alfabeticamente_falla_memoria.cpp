@@ -58,7 +58,7 @@ long long alfabetico(vector<long long>& c, vector<string>& palabras,
         }
 
         // Caso 2: eleccion_previa = 1 (string anterior es invertido)
-        if (memo[i][1] != LLONG_MAX / 2) {
+        if (memo[i][1] != maximo / 2) {
             string palabras_ordenadas;
             if (i > 0) {
                 palabras_ordenadas = palabras_revez[i-1];  // Invertido anterior
