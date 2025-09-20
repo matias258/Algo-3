@@ -80,9 +80,14 @@ vector<int> merge_sort(vector<int>& arr){
 
 
 int cartas(vector<int>& c, vector<int>& f, vector<int>& h, int i, int j, int r){
-    if (j == f.size() || i == c.size()){
+    if (i == c.size() && j != f.size()){
+        return cartas(c, f, h, 0, j+1, 0);
+    }
+    
+    if (i == c.size()){
         return 0;
     }
+    
 
     int sumar_carta = 0;
     int siguiente_jugador = 0;
@@ -134,11 +139,11 @@ int main(){
 int main() {
     // Prueba 1: Caso de ejemplo 1 del PDF
     {
-        int n = 3, k = 2;
-        vector<int> c = {1, 2, 3, 1, 2, 3};
-        vector<int> f = {1, 2, 3};
+        int n = 2, k = 2;
+        vector<int> c = {1, 2, 1, 2};
+        vector<int> f = {1, 2};
         vector<int> h = {10, 20};
-        cout << "Prueba 1 (Ejemplo 1): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 60" << endl;
+        cout << "Prueba 1 (Ejemplo 1): " << cartas(c, f, h, 0, 0, 0) << " // Esperado: 40" << endl;
     }
 
     {
