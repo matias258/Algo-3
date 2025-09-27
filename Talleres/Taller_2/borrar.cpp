@@ -51,7 +51,7 @@ int funcion(int left, int right, vector<vector<int>>& memo, string& s){
     // Eliminamos solo un char
     int res = 1 + funcion(left + 1, right, memo, s);
 
-    // are deleted if any of them matches
+
     // Si hay algunos vecinos que matchean "abcbc", saco c -> "abbc" (los b matchean)
     // Los eliminamos
     for (int i = left + 1; i <= right; i++) {
