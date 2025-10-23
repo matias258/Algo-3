@@ -1,6 +1,3 @@
-#include <vector>
-#include <iostream>
-#include <queue>
 #include <list>
 #include <unordered_set>
 #include <map>
@@ -10,6 +7,13 @@
 #include <bits/stdc++.h>
 #include <utility>
 #include <math.h>
+
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <stack>
+#include <queue>
+
 using namespace std;
 
 // Queremos encontrar el minimo camino de n a m, esto grita a 4 vientos BFS
