@@ -20,23 +20,23 @@ using namespace std;
 // Rdo: BFS me devuelve la distancia minima entre 2 nodos
 // En nuestro caso las distancias van a ser todas = 1, pues es la cantidad de veces que aprieto el boton
 // Los nodos serán el valor mostrado en la pantalla en ese momento dado
-int bfs(int n, int m) {
+long long bfs(long long n, long long m) {
     if (n == m) return 0;
 
-    const int MAX = 1000000;
-    vector<bool> visitado(MAX + 1, false); // Nodos no visitados
-    queue<pair<int, int>> nodo;           // {nodo_actual, pasos}
+    const long long MAX = 1000000;
+    vector<bool> visitado(MAX + 1, false);              // Nodos no visitados
+    queue<pair<long long, long long>> nodo;             // {nodo_actual, pasos}
 
-    nodo.push(make_pair(n, 0));           // Inicializamos en n con 0 pasos
+    nodo.push(make_pair(n, 0));                         // Inicializamos en n con 0 pasos
     visitado[n] = true;                   
 
     while (!nodo.empty()) {
-        int actual = nodo.front().first;  
-        int paso = nodo.front().second;  
+        long long actual = nodo.front().first;  
+        long long paso = nodo.front().second;  
         nodo.pop();
 
         // Rojo -> n = n * 2
-        long long rojo = (long long)actual * 2;
+        long long rojo = actual * 2;
         if (rojo <= MAX && !visitado[rojo]) {
             if (rojo == m) return paso + 1;
             visitado[rojo] = true;
@@ -44,7 +44,7 @@ int bfs(int n, int m) {
         }
 
         // Azul -> n = n - 1
-        int azul = actual - 1;
+        long long azul = actual - 1;
         if (azul >= 1 && !visitado[azul]) {
             if (azul == m) return paso + 1;
             visitado[azul] = true;
@@ -52,7 +52,7 @@ int bfs(int n, int m) {
         }
     }
 
-    return -1; 
+    return -1; // aunque siempre vamos a encontrar una solucion.
 }
 
 
