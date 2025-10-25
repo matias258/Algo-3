@@ -16,95 +16,121 @@
 
 using namespace std;
 
-
-
-
-int main() {
-    // Optimización de I/O
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    // 1. Lectura de parámetros n y m
-    int n, m;
-    if (!(cin >> n >> m)) return 1;
-
-    // 2. Lectura de las m conexiones (a, b, c)
-    // Usamos (n+1) para las listas de adyacencia si queremos modelar el grafo, 
-    // pero para la impresión de las m líneas basta con vectores de tamaño m.
-    vector<int> a(m), b(m), c(m);
-    
-    for (int i = 0; i < m; i++) {
-        // Lee a, b, c. Si el input original solo diera a y b, y no c, 
-        // tendrías que cambiar la lógica de lectura aquí.
-        if (!(cin >> a[i] >> b[i] >> c[i])) return 1;
+int viaje(int n, int m, vector<int> a, vector<int> b, vector<int> c, vector<int> k, vector<vector<int>> t){
+    // Casos Base:
+    if (n <= 1){
+        return 0;
+    }
+    if (m == 0){
+        return INT_MIN / 2;
     }
 
-    // 3. Lectura de los Viajeros (Restricciones)
-    // El problema usa índices base 1 (Planeta 1 a n).
-    // Usaremos tamaño n para k y t, donde el Planeta i+1 está en el índice i.
-    vector<int> k(n);            // k[i] es el número de viajeros para el Planeta i+1
-    vector<vector<int>> t(n);    // t[i] son los tiempos para el Planeta i+1
+    // Comenzamos con tiempo 0
+    int tiempo = 0;
+    
+    //Inicializmos Dijkstra
+    
+    //Inicializo las distancias desde planeta 0 hasta el resto con valores maximos
+    vector<int> pi(n, INT_MAX / 2);
+    pi[0] = 0; // punto de partida
 
+    //Inicializo los planetas sin visitar, que son los planetas 0,1,2,3,...,n-1
+    vector<int> planetas_sin_visitar(n);
     for (int i = 0; i < n; i++) {
-        // La PRIMERA LECTURA es k[i]
-        if (!(cin >> k[i])) return 1; 
+        planetas_sin_visitar[i] = i;
+    }
 
-        // La siguiente lectura son k[i] tiempos tj
+
+    while (!planetas_sin_visitar.empty()){
+        // Elijo el planeta actual con la menor distancia
+        int planeta_actual = -1;
+        int menor_dist = INT_MAX / 2;
+        for (int p : planetas_sin_visitar) {
+            if (pi[p] < menor_dist) { 
+                menor_dist = pi[p];
+                planeta_actual = p;
+            }
+        }
+
+        for (int i = 0; i < a.size(); i++){
+            if (a[i] == planeta_actual){
+                
+                // Relajo fijandome ambas direcciones (los portales permiten viajar en ambos sentidos)
+                if (c[i] + pi[a[i]] < pi[b[i]]){
+                    pi[b[i]] = c[i] + pi[a[i]];
+                }
+                else if (c[i] + pi[b[i]] < pi[a[i]]){
+                    pi[a[i]] = c[i] + pi[b[i]];
+                }
+            }
+        }
+        planetas_sin_visitar.erase( 
+            remove(
+                planetas_sin_visitar.begin(), planetas_sin_visitar.end(), planeta_actual),
+            planetas_sin_visitar.end());
+
+        // Me ahorro de iterar hasta el final siempre si llego antes a n
+        if (planeta_actual == n-1){
+            break;  // acá ya encontramos la min distancia al destino
+        }
+
+    }
+
+    return pi[n - 1];
+
+}
+
+/*
+int main() {
+    int n = 4, m = 4;
+    vector<int> a = {0, 0, 1, 2};
+    vector<int> b = {1, 2, 2, 3};
+    vector<int> c = {1, 4, 2, 1};
+    
+    vector<int> k(n, 0); // sin viajeros
+    vector<vector<int>> t(n);
+
+    int resultado = viaje(n, m, a, b, c, k, t);
+
+    if (resultado == -1)
+        cout << "No hay camino disponible." << endl;
+    else
+        cout << "Tiempo minimo desde el planeta 0 hasta el planeta " << n-1 << ": " << resultado << endl;
+
+    return 0;
+}
+*/
+
+
+int main(){
+    int n, m;
+    cin >> n >> m;
+
+    vector<int> a(m), b(m), c(m);
+
+    for (int i = 0; i < m; i++){
+        cin >> a[i] >> b[i] >> c[i];
+    }
+
+    vector<int> k(n);   // k[i] es el número de viajeros para el Planeta i
+    vector<vector<int>> t(n);   // t[i] son los tiempos para el Planeta i
+
+    // k[i] representa un viajero que llega al planeta i
+    // Por cada viajero obtenemos un tiempo de llegada tj que depende de k[i]
+    // Entonces si k[0] = 3 --> t[0] debe almacenar 3 enteros (un tiempo de llegada para cada viajero)
+    
+    // Ejemplo: k[0] = 3; t[0] = {1, 2, 4}; Significa:
+    // Viajero 0 llega a planeta 0 en tiempo 1
+    // Viajero 1 llega a planeta 0 en tiempo 2
+    // Viajero 2 llega a planeta 0 en tiempo 4 
+
+    for (int i = 0; i < n; i++){
+        cin >> k[i];
         t[i].resize(k[i]);
         for (int j = 0; j < k[i]; j++) {
-            if (!(cin >> t[i][j])) return 1; 
+            cin >> t[i][j]; 
         }
     }
 
-    // --- Generación de la Salida Detallada ---
-
-    cout << "--- Analisis de la Entrada del Problema ---" << endl;
-    cout << "------------------------------------------" << endl;
-
-    // A. Parametros Generales
-    cout << "A. Parametros Generales:" << endl;
-    cout << "   - N (Planetas): " << n << endl;
-    cout << "   - M (Portales/Conexiones): " << m << endl;
-    cout << endl;
-
-    // B. Conexiones (Portales)
-    cout << "B. Conexiones (Portales):" << endl;
-    cout << "   ID | Planeta A | Planeta B | Tiempo C (Segundos)" << endl;
-    cout << "---------------------------------------------------" << endl;
-    for (int i = 0; i < m; i++) {
-        cout << "  " << i + 1 << " |     " << a[i] << "     |     " << b[i] << "     |       " << c[i] << endl;
-    }
-    cout << endl;
-
-    // C. Restricciones de Llegada (Otros Viajeros)
-    cout << "C. Restricciones de Llegada (Otros Viajeros):" << endl;
-    cout << "   Planeta | k (#Viajeros) | Tiempos de Llegada (t_ij) | Restriccion de Salida (t_ij - 1)" << endl;
-    cout << "-------------------------------------------------------------------------------------" << endl;
-
-    for (int i = 0; i < n; i++) {
-        // Formato de Tiempos de Llegada
-        stringstream ss_llegada;
-        stringstream ss_salida;
-        bool has_restrictions = false;
-        
-        for (int j = 0; j < k[i]; j++) {
-            ss_llegada << t[i][j] << " ";
-            ss_salida << t[i][j] - 1 << " ";
-            has_restrictions = true;
-        }
-
-        cout << "    " << i + 1 << "    |      " << k[i] << "      | " 
-             << (has_restrictions ? ss_llegada.str() : "N/A") << (has_restrictions ? "" : " ")
-             << " | ";
-
-        if (has_restrictions) {
-            cout << "(NO salir en: " << ss_salida.str() << ")";
-        } else {
-            cout << "Ninguna";
-        }
-        cout << endl;
-    }
-    cout << "-------------------------------------------------------------------------------------" << endl;
-    
     return 0;
 }
