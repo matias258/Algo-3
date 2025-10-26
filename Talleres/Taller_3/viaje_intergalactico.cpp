@@ -46,7 +46,7 @@ long long viaje(long long n, long long m, vector<long long> a, vector<long long>
     //Inicializamos Dijkstra
    
     //Inicializo las distancias desde planeta 0 hasta el resto con valores maximos
-    vector<long long> pi(n, INT_MAX / 2);
+    vector<long long> pi(n, LLONG_MAX / 2);
     pi[0] = 0; // punto de partida
 
     // Marcamos los planetas como no visitados
@@ -75,17 +75,25 @@ long long viaje(long long n, long long m, vector<long long> a, vector<long long>
         if (planeta_actual == n-1){
             break;  
         }
+
+        long long tiempo_salida = dist_actual;
+
+        // Buscamos el primer tiempo prohibido que sea >= a nuestro tiempo_salida
+        auto it_prohibido = lower_bound(
+            t[planeta_actual].begin(),
+            t[planeta_actual].end(),
+            tiempo_salida
+        );
+
+        // Mientras el iterador sea valido y el tiempo que apunta sea nuestro tiempo de salida, esperamos.
+        while (it_prohibido != t[planeta_actual].end() && *it_prohibido == tiempo_salida) {
+            tiempo_salida++; // Esperamos un segundo
+            it_prohibido++;  // Avanzamos al siguiente tiempo prohibido
+        }
         
         for (auto [destino, tiempo] : l[planeta_actual]){
-            long long tiempo_temp = pi[planeta_actual];
-
-            // Si tiempo_temp está en t[origen] entonces debo esperar otro segundo
-            // como t[origen] viene ordenada, busco con binary search
-            while (binary_search(t[planeta_actual].begin(), t[planeta_actual].end(), tiempo_temp)) {
-                tiempo_temp++;
-            }
                 
-            long long peso = tiempo_temp + tiempo;
+            long long peso = tiempo_salida + tiempo;
 
             if (peso < pi[destino]) {
                 pi[destino] = peso;
@@ -94,7 +102,7 @@ long long viaje(long long n, long long m, vector<long long> a, vector<long long>
         }
     }
 
-    if (pi[n-1] >= INT_MAX/3){
+    if (pi[n-1] >= LLONG_MAX / 3){
         // Significa que hicimos break antes de terminar el while, entonces pi[n-1] = inf. No hay solucion.
         return -1;      
     }
@@ -103,7 +111,7 @@ long long viaje(long long n, long long m, vector<long long> a, vector<long long>
     }
 }
 
-
+/*
 int main(){
     long long n, m;
     cin >> n >> m;
@@ -139,8 +147,8 @@ int main(){
 
     return 0;
 }
+*/
 
-/*
 int main() {
     // Caso 9: Grafo con desconexión parcial y muchos viajeros
     cout << "Test Case 9:\n";
@@ -240,7 +248,7 @@ int main() {
     long long result18 = viaje(n18, m18, a18, b18, c18, k18, t18);
     cout << "Resultado: " << result18 << ", Esperado: 28\n\n";
 }
-*/
+
 
 
 
